@@ -8,11 +8,12 @@ import pandas as pd
 
 class UrbanSoundDataset(Dataset):
 
-    def __init__(self, annotations_files, audio_dir, transformation, target_sr):
+    def __init__(self, annotations_files, audio_dir, transformation, target_sr, num_samples):
         self.annotations = pd.read_csv(annotations_files)
         self.audio_dir = audio_dir
         self.transformation = transformation #callable object 
         self.target_sr = target_sr
+        self.num_samples = num_samples
 
     def __len__(self):
         return len(self.annotations)
@@ -23,8 +24,24 @@ class UrbanSoundDataset(Dataset):
         signal, sr = torchaudio.load(audio_sample_path)
         signal = self._resample_if_necessary(signal, sr)
         signal = self._mix_down_if_necessary(signal)
+        signal = self._right_pad_if_necessary(signal) #less samples than expected 
+        signal = self._cut_if_necessary(signal) # more samples than expected
         signal = self.transformation(signal)
         return signal, label
+
+    def _cut_if_necessary(self, signal):
+        # signal -> Tensor -> (1, n_samples)
+        if signal.shape[1] > self.num_samples:
+            return signal[:, :self.num_samples]
+
+    def _right_pad_if_necessary(self, signal):
+        length_signal = signal.shape[1]
+        if length_signal < self.num_samples:
+            num_missing_samples = self.num_samples - length_signal
+            last_dim_padding = (0, num_missing_samples)
+            signal = torch.nn.functional.pad(signal, last_dim_padding)
+        return signal
+
 
     def _resample_if_necessary(self, signal, sr):
         if sr != self.target_sr:
@@ -54,7 +71,8 @@ if __name__ == "__main__":
 
     ANNOTATIONS_FILES = "/Users/francescaronchini/Desktop/Corsi/thesoundofai/data/UrbanSound8K/metadata/UrbanSound8K.csv"
     AUDIO_DIR = "/Users/francescaronchini/Desktop/Corsi/thesoundofai/data/UrbanSound8K/audio"
-    SAMPLE_RATE = 16000
+    SAMPLE_RATE = 22050
+    NUM_SAMPLES = 22050
 
 
     mel_spectrogram = torchaudio.transforms.MelSpectrogram(
@@ -65,11 +83,11 @@ if __name__ == "__main__":
     )
 
 
-    usd = UrbanSoundDataset(ANNOTATIONS_FILES, AUDIO_DIR, mel_spectrogram, SAMPLE_RATE)
+    usd = UrbanSoundDataset(ANNOTATIONS_FILES, AUDIO_DIR, mel_spectrogram, SAMPLE_RATE, NUM_SAMPLES)
 
     print(f"There are {len(usd)} samples in the dataset")
 
-    signal, label = usd[0]
+    signal, label = usd[1]
 
     print(signal, label)
     
