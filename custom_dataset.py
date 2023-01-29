@@ -8,12 +8,14 @@ import pandas as pd
 
 class UrbanSoundDataset(Dataset):
 
-    def __init__(self, annotations_files, audio_dir, transformation, target_sr, num_samples):
+    def __init__(self, annotations_files, audio_dir, transformation, target_sr, num_samples, device):
         self.annotations = pd.read_csv(annotations_files)
         self.audio_dir = audio_dir
-        self.transformation = transformation #callable object 
+        self.device = device
+        self.transformation = transformation.to(self.device)
         self.target_sr = target_sr
         self.num_samples = num_samples
+        
 
     def __len__(self):
         return len(self.annotations)
@@ -22,11 +24,12 @@ class UrbanSoundDataset(Dataset):
         audio_sample_path = self._get_audio_sample_path(index)
         label = self._get_audio_sample_label(index)
         signal, sr = torchaudio.load(audio_sample_path)
+        signal = signal.to(self.device)
         signal = self._resample_if_necessary(signal, sr)
         signal = self._mix_down_if_necessary(signal)
         signal = self._right_pad_if_necessary(signal) #less samples than expected 
         signal = self._cut_if_necessary(signal) # more samples than expected
-        signal = self.transformation(signal)
+        signal = self.transformation(signal) # transformation and signal run on the same device
         return signal, label
 
     def _cut_if_necessary(self, signal):
@@ -74,6 +77,13 @@ if __name__ == "__main__":
     SAMPLE_RATE = 22050
     NUM_SAMPLES = 22050
 
+    if torch.cuda.is_available():
+        device = "GPU"
+    else:
+        device = "CPU"
+
+    print(f"Using device: {device}")
+
 
     mel_spectrogram = torchaudio.transforms.MelSpectrogram(
         sample_rate=SAMPLE_RATE, 
@@ -83,7 +93,7 @@ if __name__ == "__main__":
     )
 
 
-    usd = UrbanSoundDataset(ANNOTATIONS_FILES, AUDIO_DIR, mel_spectrogram, SAMPLE_RATE, NUM_SAMPLES)
+    usd = UrbanSoundDataset(ANNOTATIONS_FILES, AUDIO_DIR, mel_spectrogram, SAMPLE_RATE, NUM_SAMPLES, device)
 
     print(f"There are {len(usd)} samples in the dataset")
 
