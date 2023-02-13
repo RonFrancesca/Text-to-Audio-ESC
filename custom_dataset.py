@@ -12,6 +12,7 @@ class UrbanSoundDataset(Dataset):
         self.annotations = pd.read_csv(annotations_files)
         self.audio_dir = audio_dir
         self.device = device
+        print(self.device)
         self.transformation = transformation.to(self.device)
         self.target_sr = target_sr
         self.num_samples = num_samples
@@ -78,9 +79,9 @@ if __name__ == "__main__":
     NUM_SAMPLES = 22050
 
     if torch.cuda.is_available():
-        device = "GPU"
+        device = "gpu"
     else:
-        device = "CPU"
+        device = "cpu"
 
     print(f"Using device: {device}")
 
