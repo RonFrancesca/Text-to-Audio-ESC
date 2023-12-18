@@ -2,9 +2,8 @@ import torch
 import torchaudio
 from custom_dataset import UrbanSoundDataset
 from cnn import CNNNetwork
-from main import EPOCHS, BATCH_SIZE
 
-# should be classes as urbansound
+# TODO: should be classes as urbansound
 class_mapping = [
    "0", 
    "1", 
@@ -30,14 +29,15 @@ def predict(model, input, target, class_mapping):
     return predicted, excepted
 
 if __name__ == "__main__":
+    
     # load the model 
     cnn = CNNNetwork()
-    state_dict = torch.load("cnn.pth") #train model that would need to be created
+    state_dict = torch.load("urban-sound-cnn.pth") #train model that would need to be created
     cnn.load_state_dict(state_dict)
 
     # load UrbanSound dataset
-    ANNOTATIONS_FILES = "/Users/francescaronchini/Desktop/Corsi/thesoundofai/data/UrbanSound8K/metadata/UrbanSound8K.csv"
-    AUDIO_DIR = "/Users/francescaronchini/Desktop/Corsi/thesoundofai/data/UrbanSound8K/audio/"
+    ANNOTATIONS_FILES = "/nas/home/fronchini/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
+    AUDIO_DIR = "/nas/home/fronchini/urban-sound-class/UrbanSound8K/audio"
     SAMPLE_RATE = 22050
     NUM_SAMPLES = 22050
 
@@ -48,15 +48,19 @@ if __name__ == "__main__":
         n_mels=64
     )
 
+    # change the dataset with the cuda or cpu device becaue I don't care about the inference on GPU
     usd = UrbanSoundDataset(ANNOTATIONS_FILES, AUDIO_DIR, mel_spectrogram, SAMPLE_RATE, NUM_SAMPLES, "cpu")
     
 
     # get a sample from urban sound set for inference
-    input, target = usd[0][0], usd[0][1]  # [batch size, num_channels, fr, time]
-    input.unsqueeze_(0)
+    
+    for sample in range(10):
+    
+        input, target = usd[sample][0], usd[sample][1]  # [batch size, num_channels, fr, time] -> Tensor of three dimensions
+        input.unsqueeze_(0) # to add the extra index on the dimension that we want to introduce
 
 
-    # make an inference
-    predicted, excepted = predict(cnn, input, target, class_mapping)
-    print(f"Predicted: {predicted}, expected: {excepted}")
+        # make an inference
+        predicted, excepted = predict(cnn, input, target, class_mapping)
+        print(f"Predicted: {predicted}, expected: {excepted}")
 

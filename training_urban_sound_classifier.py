@@ -1,8 +1,10 @@
 import torch
+import torchvision
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor 
+import os
 
 import torchaudio
 from cnn import CNNNetwork
@@ -10,7 +12,7 @@ from cnn import CNNNetwork
 from custom_dataset import UrbanSoundDataset
 
 BATCH_SIZE = 128
-EPOCHS = 10
+EPOCHS = 2
 LEARNING_RATE = .001
 
 
@@ -34,15 +36,21 @@ def train(model, data_loader, loss_fn, optimiser, device, epochs):
 
     for i in range(epochs):
         print(f"Epoch: {i+1}")
-        train_one_epoch(model,data_loader, loss_fn, optimiser, device)
+        train_one_epoch(model, data_loader, loss_fn, optimiser, device)
         print(f"----------------")
     print("Training is done ")
 
 
 if __name__== "__main__":
+    
+    print("PyTorch version:", torch.__version__)
+    print("Torchvision version:", torchvision.__version__)
+    # Imports to select GPU
+    os.environ['CUDA_VISIBLE_DEVICES'] = "2"
+    os.environ['CUDA_ALLOW_GROWTH'] = 'True'
 
     if torch.cuda.is_available():
-        device = "gpu"
+        device = "cuda"
     else:
         device = "cpu"
 
@@ -50,8 +58,8 @@ if __name__== "__main__":
 
 
     # instatiating the dataset 
-    ANNOTATIONS_FILES = "/Users/francescaronchini/Desktop/Corsi/thesoundofai/data/UrbanSound8K/metadata/UrbanSound8K.csv"
-    AUDIO_DIR = "/Users/francescaronchini/Desktop/Corsi/thesoundofai/data/UrbanSound8K/audio/"
+    ANNOTATIONS_FILES = "/nas/home/fronchini/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
+    AUDIO_DIR = "/nas/home/fronchini/urban-sound-class/UrbanSound8K/audio"
     SAMPLE_RATE = 22050
     NUM_SAMPLES = 22050
 
@@ -75,8 +83,8 @@ if __name__== "__main__":
                                 )
     train(cnn, train_data_loader, loss_fn, optimiser, device, EPOCHS)
 
-    torch.save(cnn.state_dict(), "feed_forward_net.pth")
-    print("Model trained and stored at feed_forward_net.pth")
+    torch.save(cnn.state_dict(), "urban-sound-cnn.pth")
+    print("Model trained and stored at urban-sound-cnn.pth")
 
 
 

@@ -42,7 +42,7 @@ class CNNNetwork(nn.Module):
                 padding=2
             ),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2)          
+            nn.MaxPool2d(kernel_size=2)     # ---> what is this doing?    
         )
 
         self.conv4 = nn.Sequential(
@@ -71,6 +71,7 @@ class CNNNetwork(nn.Module):
         x = self.flatten(x)
         logits = self.linear(x)
         predictions = self.softmax(logits)
+        return predictions
         
 if __name__ == "__main__":
 
