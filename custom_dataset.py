@@ -4,22 +4,29 @@ import torch
 from torch.utils.data import Dataset
 import pandas as pd
 import torchaudio
+from torchaudio.transforms import MelSpectrogram
 
 
 class UrbanSoundDataset(Dataset):
 
     def __init__(self,
-                 annotations_file,
-                 audio_dir,
-                 transformation,
-                 target_sample_rate,
+                 config,
                  num_samples,
                  device):
-        self.annotations = pd.read_csv(annotations_file)
-        self.audio_dir = audio_dir
+        self.annotations = pd.read_csv(config["data"]["metadata_file"])
+        self.audio_dir = config["data"]["audio_dir"]
         self.device = device
-        self.transformation = transformation.to(self.device)
-        self.target_sample_rate = target_sample_rate
+        
+        sample_rate = config["feats"]["sample_rate"]
+        
+        self.transformation = MelSpectrogram(
+            sample_rate=sample_rate, 
+            n_fft=config["feats"]["n_window"],
+            hop_length=config["feats"]["hop_length"],
+            n_mels=config["feats"]["n_mels"]
+        ).to(self.device)
+        
+        self.target_sample_rate = sample_rate
         self.num_samples = num_samples
 
     def __len__(self):
