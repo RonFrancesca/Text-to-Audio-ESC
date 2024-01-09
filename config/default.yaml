@@ -1,3 +1,5 @@
+gpu: "1"
+allow_growth: "True"
 training:
   #batch size: [synth, weak, unlabel]
   batch_size: 128
@@ -11,40 +13,30 @@ data: # change with your paths if different.
   metadata_file: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
   audio_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
   audio_max_len: 10
-  fs: 22050
+  fs: 44100
   net_subsample: 4
 opt:
   lr: 0.001
 feats:
-  n_mels: 64
+  n_mels: 128
   n_filters: 2048
-  hop_length: 512
+  hop_length: 1024
   n_window: 1024
-  sample_rate: 22050
+  sample_rate: 44100
   f_min: 0
-  f_max: 8000
+  f_max: 22050
 net:
-  kernel_size: 3
+  kernel_size: 5
   stride: 1
-  padding: 2
-  max_pooling_ks: 2
+  #padding: 2
+  dense_drop: [0.5, 0.5]
+  maxp_ks: [4, 2]
+  maxp_stride: [4, 2]
   nclass: 10
-
-  in_channel: [1, 16, 32, 64]
-  out_channel: [16, 32, 64, 128]
+  in_channel: [1, 24, 48]
+  out_channel: [24, 48, 48]
+  dense_in: [3456, 64]
+  dense_out: [64, 10]
   
-  # dropout: 0.5
-  # rnn_layers: 2
-  # attention: True
-  # n_RNN_cell: 128
-  # activation: glu
-  # rnn_type: BGRU
-  # kernel_size: [3, 3, 3, 3, 3, 3, 3]
-  # padding: [1, 1, 1, 1, 1, 1, 1]
-  # stride: [1, 1, 1, 1, 1, 1, 1]
-  # nb_filters: [ 16, 32, 64, 128, 128, 128, 128 ]
-  # pooling: [ [ 2, 2 ], [ 2, 2 ], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ] ]
-  # dropout_recurrent: 0
-  # use_embeddings: False
 
         

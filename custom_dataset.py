@@ -76,32 +76,3 @@ class UrbanSoundDataset(Dataset):
 
     def _get_audio_sample_label(self, index):
         return self.annotations.iloc[index, 6]
-
-
-if __name__ == "__main__":
-    ANNOTATIONS_FILE = "/nas/home/fronchini/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
-    AUDIO_DIR = "/nas/home/fronchini/urban-sound-class/UrbanSound8K/audio"
-    SAMPLE_RATE = 22050
-    NUM_SAMPLES = 22050
-
-    if torch.cuda.is_available():
-        device = "cuda"
-    else:
-        device = "cpu"
-    print(f"Using device {device}")
-
-    mel_spectrogram = torchaudio.transforms.MelSpectrogram(
-        sample_rate=SAMPLE_RATE,
-        n_fft=1024,
-        hop_length=512,
-        n_mels=64
-    )
-
-    usd = UrbanSoundDataset(ANNOTATIONS_FILE,
-                            AUDIO_DIR,
-                            mel_spectrogram,
-                            SAMPLE_RATE,
-                            NUM_SAMPLES,
-                            device)
-    print(f"There are {len(usd)} samples in the dataset.")
-    signal, label = usd[0]

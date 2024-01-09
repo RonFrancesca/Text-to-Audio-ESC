@@ -15,7 +15,7 @@ from cnn_fra import CNNNetwork
 from custom_dataset import UrbanSoundDataset
 
 
-def prepare_run(argv=None):
+def init(argv=None):
     
     parser = argparse.ArgumentParser("Training a Audio Event Classification (AEC) syststem")
     parser.add_argument(
@@ -90,14 +90,14 @@ def train(model, data_loader, loss_fn, optimiser, device, epochs):
 
 if __name__== "__main__":
     
-    config = prepare_run()
+    config = init()
     
     print("PyTorch version:", torch.__version__)
     print("Torchvision version:", torchvision.__version__)
-    # Imports to select GPU
-    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
-    os.environ['CUDA_ALLOW_GROWTH'] = 'True'
     
+    # Select GPU
+    os.environ['CUDA_VISIBLE_DEVICES'] = config["gpu"]
+    os.environ['CUDA_ALLOW_GROWTH'] = config["allow_growth"]
 
     if torch.cuda.is_available():
         device = "cuda"
@@ -111,19 +111,17 @@ if __name__== "__main__":
     audio_dir = config["data"]["audio_dir"]
     sample_rate = config["feats"]["sample_rate"]
     audio_lenght = 4
-    #num_samples = sample_rate * audio_lenght
-    num_samples = 22050
+    num_samples = sample_rate * audio_lenght
+    #num_samples = 22050
     
     # dataset
     usd = UrbanSoundDataset(config, num_samples, device)
-    
-
     # create a data loader for the dataset 
     train_data_loader = DataLoader(usd, batch_size=config["training"]["batch_size"])
     
     cnn = CNNNetwork(config).to(device)
     
-    input_example = (1, 64, 44)
+    input_example = (1, 128, 172)
     summary(cnn, input_example)  #if you have cuda, you will need to do cnn.cuda()
 
     # train model
