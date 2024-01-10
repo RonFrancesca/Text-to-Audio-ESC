@@ -7,13 +7,53 @@ import torchaudio
 from torchaudio.transforms import MelSpectrogram
 
 
+def pad_to(signal, num_samples):
+    
+    length_signal = signal.shape[1]
+    
+    # cut if necessary
+    if length_signal > num_samples:
+        signal = signal[:, :num_samples]
+        
+    # pad if necessary
+    if signal.shape[1] < num_samples:
+        num_missing_samples = num_samples - length_signal
+        last_dim_padding = (0, num_missing_samples)
+        signal = torch.nn.functional.pad(signal, last_dim_padding)
+        
+    return signal
+    
+    
+def process_audio(audio_sample_path,annotation_file, target_sample_rate, num_samples, index, device):
+    
+    signal, sr = torchaudio.load(audio_sample_path)
+    
+    # resample if necessary
+    if sr != target_sample_rate:
+        resampler = torchaudio.transforms.Resample(sr, target_sample_rate)
+        signal = resampler(signal)
+    
+    # make the signal mono if it is not
+    if signal.shape[0] > 1:
+        signal = torch.mean(signal, dim=0, keepdim=True)
+            
+    # pad the signal in necessary
+    signal = pad_to(signal, num_samples)
+    
+    return signal, annotation_file.iloc[index, 6]
+
 class UrbanSoundDataset(Dataset):
 
     def __init__(self,
                  config,
                  num_samples,
                  device):
-        self.annotations = pd.read_csv(config["data"]["metadata_file"])
+        
+        if config["fast_run"]:
+            self.annotations = pd.read_csv(config["data"]["metadata_file"])[:200]
+        else:
+            self.annotations = pd.read_csv(config["data"]["metadata_file"])
+        
         self.audio_dir = config["data"]["audio_dir"]
         self.device = device
         
@@ -24,7 +64,7 @@ class UrbanSoundDataset(Dataset):
             n_fft=config["feats"]["n_window"],
             hop_length=config["feats"]["hop_length"],
             n_mels=config["feats"]["n_mels"]
-        ).to(self.device)
+        )
         
         self.target_sample_rate = sample_rate
         self.num_samples = num_samples
@@ -33,46 +73,16 @@ class UrbanSoundDataset(Dataset):
         return len(self.annotations)
 
     def __getitem__(self, index):
-        audio_sample_path = self._get_audio_sample_path(index)
-        label = self._get_audio_sample_label(index)
-        signal, sr = torchaudio.load(audio_sample_path)
-        signal = signal.to(self.device)
-        signal = self._resample_if_necessary(signal, sr)
-        signal = self._mix_down_if_necessary(signal)
-        signal = self._cut_if_necessary(signal)
-        signal = self._right_pad_if_necessary(signal)
+        
+        fold = f"fold{self.annotations.iloc[index, 5]}"
+        audio_sample_path = os.path.join(self.audio_dir, fold, self.annotations.iloc[index, 0])
+        
+        signal, label = process_audio(audio_sample_path, self.annotations, self.target_sample_rate, self.num_samples, index, self.device)
+        
         signal = self.transformation(signal)
+        
         return signal, label
 
-    def _cut_if_necessary(self, signal):
-        if signal.shape[1] > self.num_samples:
-            signal = signal[:, :self.num_samples]
-        return signal
+    
 
-    def _right_pad_if_necessary(self, signal):
-        length_signal = signal.shape[1]
-        if length_signal < self.num_samples:
-            num_missing_samples = self.num_samples - length_signal
-            last_dim_padding = (0, num_missing_samples)
-            signal = torch.nn.functional.pad(signal, last_dim_padding)
-        return signal
-
-    def _resample_if_necessary(self, signal, sr):
-        if sr != self.target_sample_rate:
-            resampler = torchaudio.transforms.Resample(sr, self.target_sample_rate).to(self.device)
-            signal = resampler(signal)
-        return signal
-
-    def _mix_down_if_necessary(self, signal):
-        if signal.shape[0] > 1:
-            signal = torch.mean(signal, dim=0, keepdim=True)
-        return signal
-
-    def _get_audio_sample_path(self, index):
-        fold = f"fold{self.annotations.iloc[index, 5]}"
-        path = os.path.join(self.audio_dir, fold, self.annotations.iloc[
-            index, 0])
-        return path
-
-    def _get_audio_sample_label(self, index):
-        return self.annotations.iloc[index, 6]
+    

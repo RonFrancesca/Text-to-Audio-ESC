@@ -10,9 +10,10 @@ import argparse
 import yaml
 
 import torchaudio
-from cnn_fra import CNNNetwork
+from model import CNNNetwork
 
 from custom_dataset import UrbanSoundDataset
+
 
 
 def init(argv=None):
@@ -29,30 +30,9 @@ def init(argv=None):
         default="./exp/",
         help="Directory where to save tensorboard logs, saved models, etc.",
     )
-
-    parser.add_argument(
-        "--resume_from_checkpoint",
-        default=None,
-        help="Allow the training to be resumed, take as input a previously saved model (.ckpt).",
-    )
     
     parser.add_argument(
         "--test_from_checkpoint", default=None, help="Test the model specified"
-    )
-    
-    parser.add_argument(
-        "--gpus",
-        default="1",
-        help="The number of GPUs to train on, or the gpu to use, default='1', "
-        "so uses one GPU",
-    )
-    
-    parser.add_argument(
-        "--fast_dev_run",
-        action="store_true",
-        default=False,
-        help="Use this option to make a 'fake' run which is useful for development and debugging. "
-        "It uses very few batches and epochs so it won't give any meaningful result.",
     )
 
     args = parser.parse_args(argv)
@@ -110,31 +90,54 @@ if __name__== "__main__":
     metadata_file = config["data"]["metadata_file"]
     audio_dir = config["data"]["audio_dir"]
     sample_rate = config["feats"]["sample_rate"]
-    audio_lenght = 4
-    num_samples = sample_rate * audio_lenght
-    #num_samples = 22050
+    audio_max_len = config["data"]["audio_max_len"]
+    num_samples = sample_rate * audio_max_len
     
     # dataset
     usd = UrbanSoundDataset(config, num_samples, device)
+    
+    print(torch.cuda.device_count())
+    
     # create a data loader for the dataset 
-    train_data_loader = DataLoader(usd, batch_size=config["training"]["batch_size"])
+    train_data_loader = DataLoader(usd, 
+                        batch_size=config["training"]["batch_size"], 
+                        num_workers=torch.cuda.device_count() * 8,
+                        pin_memory=True
+                        )
     
-    cnn = CNNNetwork(config).to(device)
+    model = CNNNetwork(config)
+    model = model.to(device)
     
-    input_example = (1, 128, 172)
-    summary(cnn, input_example)  #if you have cuda, you will need to do cnn.cuda()
+    # example of the input
+    input_example = (1, config["feats"]["n_mels"], int(num_samples/config["feats"]["n_window"]))
+    summary(model, input_example)  
 
     # train model
     loss_fn = nn.CrossEntropyLoss()
-    optimiser = torch.optim.Adam(cnn.parameters(), 
+    
+    
+    # Specify different weight decay values for different layers
+    # For example, you may want to apply a higher weight decay to the weights of the fully connected layers
+    params = [
+        {'params': model.cnn.parameters(), 'weight_decay': 0},
+        {'params': model.flatten.parameters(), 'weight_decay': 0},
+        {'params': model.dense_layers.parameters(), 'weight_decay': 0.001},
+    ]   
+    
+    # Add parameters of each linear layer in dense_layers with different weight decay - # If I want to apply different weigts to them
+    # for i, layer in enumerate(model.dense_layers):
+    #     if isinstance(layer, nn.Linear):
+    #         params.append({'params': layer.parameters(), 'weight_decay': 0.001})  # Adjust weight_decay as needed
+    
+    optimiser = torch.optim.Adam(params, 
                                 lr=config["opt"]["lr"]
                                 )
-    
-    train(cnn, train_data_loader, loss_fn, optimiser, device, config["training"]["n_epochs"])
 
-    checkpoint_folder = "./checkpoint"
+    n_epochs = 2 if config["fast_run"] else config["training"]["n_epochs"]
     
-    torch.save(cnn.state_dict(), os.path.join(checkpoint_folder, "urban-sound-cnn.pth"))
+    train(model, train_data_loader, loss_fn, optimiser, device, n_epochs)
+    
+    torch.save(model.state_dict(), os.path.join(config["data"]["checkpoint_folder"], "urban-sound-cnn.pth"))
     print("Model trained and stored at urban-sound-cnn.pth")
 
 

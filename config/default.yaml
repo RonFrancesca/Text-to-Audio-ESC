@@ -1,22 +1,22 @@
-gpu: "1"
+fast_run: 0
+gpu: "0"
 allow_growth: "True"
 training:
   #batch size: [synth, weak, unlabel]
-  batch_size: 128
+  batch_size: 256
   batch_size_val: 24
-  n_epochs: 1 # max num epochs
+  n_epochs: 50 # max num epochs
   val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
-  enable_progress_bar: True
 data: # change with your paths if different.
   # NOTE: if you have data in 44kHz only then synth_folder will be the path where
   # resampled data will be placed.
   metadata_file: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
   audio_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
-  audio_max_len: 10
+  checkpoint_folder: "./checkpoint"
+  audio_max_len: 4
   fs: 44100
-  net_subsample: 4
 opt:
-  lr: 0.001
+  lr: 0.01
 feats:
   n_mels: 128
   n_filters: 2048
@@ -28,7 +28,7 @@ feats:
 net:
   kernel_size: 5
   stride: 1
-  #padding: 2
+  padding: 2
   dense_drop: [0.5, 0.5]
   maxp_ks: [4, 2]
   maxp_stride: [4, 2]

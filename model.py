@@ -18,7 +18,6 @@ class CNNNetwork(nn.Module):
                     in_channels = config["net"]["in_channel"][i], 
                     out_channels = config["net"]["out_channel"][i],
                     kernel_size=config["net"]["kernel_size"],
-                    stride=config["net"]["stride"],
                 )
             )
             
@@ -48,6 +47,7 @@ class CNNNetwork(nn.Module):
                     f"linear_{i}", 
                     nn.Linear(config["net"]["dense_in"][i], config["net"]["dense_out"][i]),
                 )
+            
             if i == 0:
                 self.dense_layers.add_module(
                     f"relu_{i}", 
@@ -67,4 +67,4 @@ class CNNNetwork(nn.Module):
 if __name__ == "__main__":
 
    cnn = CNNNetwork()
-   summary(cnn, (1, 64, 44))  #if you have cuda, you will need to do cnn.cuda()
+   summary(cnn, (1, 128, 172))  #if you have cuda, you will need to do cnn.cuda()
