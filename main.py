@@ -2,8 +2,6 @@ import torch
 import torchvision
 from torch import nn
 from torch.utils.data import DataLoader
-from torchvision import datasets
-from torchvision.transforms import ToTensor 
 from torchsummary import summary
 import os
 import argparse
@@ -13,6 +11,8 @@ import torchaudio
 from model import CNNNetwork
 
 from custom_dataset import UrbanSoundDataset
+from tqdm import tqdm
+from torchaudio.transforms import MelSpectrogram
 
 
 
@@ -43,28 +43,50 @@ def init(argv=None):
     return configs
 
 
-def train_one_epoch(model, data_loader, loss_fn, optimiser, device):
+def train_one_epoch(model, data_loader, transformation, loss_fn, optimizer, device):
+    
+    num_batches = len(data_loader.dataset) / 256
+    print(f"Number of batches: {num_batches}")
+    transformation.to(device)
+    running_loss = 0.
 
-    for inputs, targets in data_loader:
+    for _, (inputs, targets) in enumerate(tqdm(data_loader)):
+        
         inputs, targets = inputs.to(device), targets.to(device)
+        inputs = transformation(inputs)
+        
 
-        # calculate loss
+        # Zero your gradients for every batch!
+        optimizer.zero_grad()
+
+        # make prediction for this batch
         predictions = model(inputs)
-        loss = loss_fn(predictions, targets)
 
-        # backpropagate loss and update weights
-        optimiser.zero_grad()
+         # Compute the loss and its gradients
+        loss = loss_fn(predictions, targets)
         loss.backward()
+
+        # adjust learning weights
         optimiser.step()
 
-    print(f"Loss: {loss.item()}")
+        running_loss += loss.detach().item()
+    
+    return running_loss / num_batches
 
 def train(model, data_loader, loss_fn, optimiser, device, epochs):
+    
+    transformation = MelSpectrogram(
+        sample_rate=sample_rate, 
+        n_fft=config["feats"]["n_window"],
+        hop_length=config["feats"]["hop_length"],
+        n_mels=config["feats"]["n_mels"]
+    )
 
-    for i in range(epochs):
+    for i in tqdm(range(epochs)):
+        model.train(True)
         print(f"Epoch: {i+1}")
-        train_one_epoch(model, data_loader, loss_fn, optimiser, device)
-        print(f"----------------")
+        train_loss = train_one_epoch(model, data_loader, transformation, loss_fn, optimiser, device)
+        print(f"Train_loss: {train_loss}")
     print("Training is done ")
 
 
@@ -114,7 +136,6 @@ if __name__== "__main__":
 
     # train model
     loss_fn = nn.CrossEntropyLoss()
-    
     
     # Specify different weight decay values for different layers
     # For example, you may want to apply a higher weight decay to the weights of the fully connected layers

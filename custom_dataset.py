@@ -59,13 +59,6 @@ class UrbanSoundDataset(Dataset):
         
         sample_rate = config["feats"]["sample_rate"]
         
-        self.transformation = MelSpectrogram(
-            sample_rate=sample_rate, 
-            n_fft=config["feats"]["n_window"],
-            hop_length=config["feats"]["hop_length"],
-            n_mels=config["feats"]["n_mels"]
-        )
-        
         self.target_sample_rate = sample_rate
         self.num_samples = num_samples
 
@@ -79,7 +72,7 @@ class UrbanSoundDataset(Dataset):
         
         signal, label = process_audio(audio_sample_path, self.annotations, self.target_sample_rate, self.num_samples, index, self.device)
         
-        signal = self.transformation(signal)
+        #signal = self.transformation(signal)
         
         return signal, label
 
