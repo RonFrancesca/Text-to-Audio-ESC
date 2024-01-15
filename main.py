@@ -1,11 +1,14 @@
 import torch
 import torchvision
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, BatchSampler, RandomSampler
 from torchsummary import summary
 import os
 import argparse
 import yaml
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 import torchaudio
 from model import CNNNetwork
@@ -14,6 +17,18 @@ from custom_dataset import UrbanSoundDataset
 from tqdm import tqdm
 from torchaudio.transforms import MelSpectrogram
 
+class_mapping = [
+   "0",  
+   "1", 
+   "2", 
+   "3", 
+   "4",
+   "5",
+   "6", 
+   "7", 
+   "8", 
+   "9"
+]
 
 
 def init(argv=None):
@@ -37,6 +52,7 @@ def init(argv=None):
 
     args = parser.parse_args(argv)
 
+
     with open(args.conf_file, "r") as f:
         configs = yaml.safe_load(f)
         
@@ -50,11 +66,12 @@ def train_one_epoch(model, data_loader, transformation, loss_fn, optimizer, devi
     transformation.to(device)
     running_loss = 0.
 
+
     for _, (inputs, targets) in enumerate(tqdm(data_loader)):
-        
+            
         inputs, targets = inputs.to(device), targets.to(device)
-        inputs = transformation(inputs)
         
+        inputs = transformation(inputs)
 
         # Zero your gradients for every batch!
         optimizer.zero_grad()
@@ -62,7 +79,7 @@ def train_one_epoch(model, data_loader, transformation, loss_fn, optimizer, devi
         # make prediction for this batch
         predictions = model(inputs)
 
-         # Compute the loss and its gradients
+        # Compute the loss and its gradients
         loss = loss_fn(predictions, targets)
         loss.backward()
 
@@ -73,15 +90,8 @@ def train_one_epoch(model, data_loader, transformation, loss_fn, optimizer, devi
     
     return running_loss / num_batches
 
-def train(model, data_loader, loss_fn, optimiser, device, epochs):
+def train(model, data_loader, transformation, loss_fn, optimiser, device, epochs):
     
-    transformation = MelSpectrogram(
-        sample_rate=sample_rate, 
-        n_fft=config["feats"]["n_window"],
-        hop_length=config["feats"]["hop_length"],
-        n_mels=config["feats"]["n_mels"]
-    )
-
     for i in tqdm(range(epochs)):
         model.train(True)
         print(f"Epoch: {i+1}")
@@ -115,14 +125,29 @@ if __name__== "__main__":
     audio_max_len = config["data"]["audio_max_len"]
     num_samples = sample_rate * audio_max_len
     
+    # dataset temporary
+    
+    annotations = pd.read_csv(config["data"]["metadata_file"])
+    
+    #paths_list = annotations.apply(lambda row: os.path.join(audio_dir, f"fold{row[5]}", row[0]), axis=1)
+    train_dataset, test_dataset = train_test_split(annotations, shuffle=False, test_size=0.2, random_state=42)
+    test_dataset = test_dataset.reset_index(drop=True)
+    
+    
     # dataset
-    usd = UrbanSoundDataset(config, num_samples, device)
+    usd_train = UrbanSoundDataset(config, train_dataset, num_samples)
+    usd_test = UrbanSoundDataset(config, test_dataset, num_samples)
     
-    print(torch.cuda.device_count())
+    train_data_loader = DataLoader(usd_train, 
+                        shuffle=True,
+                        batch_size=config["training"]["batch_size"],
+                        num_workers=torch.cuda.device_count() * 8,
+                        prefetch_factor=4,
+                        pin_memory=True
+                        )
     
-    # create a data loader for the dataset 
-    train_data_loader = DataLoader(usd, 
-                        batch_size=config["training"]["batch_size"], 
+    test_data_loader = DataLoader(usd_test, 
+                        batch_size=config["testing"]["batch_size"],
                         num_workers=torch.cuda.device_count() * 8,
                         pin_memory=True
                         )
@@ -156,10 +181,62 @@ if __name__== "__main__":
 
     n_epochs = 2 if config["fast_run"] else config["training"]["n_epochs"]
     
-    train(model, train_data_loader, loss_fn, optimiser, device, n_epochs)
+    transformation = MelSpectrogram(
+        sample_rate=sample_rate, 
+        n_fft=config["feats"]["n_window"],
+        hop_length=config["feats"]["hop_length"],
+        n_mels=config["feats"]["n_mels"]
+    )
     
+    
+    train(model, train_data_loader, transformation, loss_fn, optimiser, device, n_epochs)
     torch.save(model.state_dict(), os.path.join(config["data"]["checkpoint_folder"], "urban-sound-cnn.pth"))
     print("Model trained and stored at urban-sound-cnn.pth")
+    
+    ###############
+    ## inference ##
+    ############### 
+    checkpoint_folder = config["data"]["checkpoint_folder"]
+    
+    # load the model
+    #model = CNNNetwork(config)
+    state_dict = torch.load(os.path.join(checkpoint_folder, "urban-sound-cnn.pth")) #train model that would need to be created
+    model.load_state_dict(state_dict)
+    #model = model.to(device)
+    
+    # Initialize lists to store true labels and predicted labels
+    true_labels = []
+    predicted_labels = []
+    
+    model.eval()
+    # get a sample from urban sound set for inference
+    with torch.no_grad():
+        
+        for inputs, labels in test_data_loader:  # Use the test_loader for testing
+            inputs, labels = inputs.to(device), labels.to(device)
+            transformation = transformation.to(device)
+            inputs = transformation(inputs)
+            
+            # Forward pass
+            outputs = model(inputs)
+            outputs = outputs.detach()
+
+            # Get predicted labels
+            #_, predicted = torch.max(outputs, 1)
+            
+            predicted_index = outputs[0].argmax(0)
+            predicted = int(class_mapping[predicted_index])
+            excepted = int(class_mapping[labels])
+            
+            # Append true and predicted labels to lists
+            true_labels.append(excepted)
+            predicted_labels.append(predicted)
+
+        # Calculate accuracy using scikit-learn's accuracy_score
+    accuracy = accuracy_score(true_labels, predicted_labels)
+    print(f"Accuracy: {accuracy * 100:.2f}%")
+    
+    
 
 
 

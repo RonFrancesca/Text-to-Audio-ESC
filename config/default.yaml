@@ -1,12 +1,15 @@
 fast_run: 0
-gpu: "0"
+gpu: "2"
 allow_growth: "True"
+mode: "test"
 training:
   #batch size: [synth, weak, unlabel]
   batch_size: 256
   batch_size_val: 24
-  n_epochs: 10 # max num epochs
+  n_epochs: 1 # max num epochs
   val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
+testing:
+  batch_size: 1
 data: # change with your paths if different.
   # NOTE: if you have data in 44kHz only then synth_folder will be the path where
   # resampled data will be placed.

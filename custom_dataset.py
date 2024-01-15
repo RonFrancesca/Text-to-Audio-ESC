@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 import pandas as pd
 import torchaudio
 from torchaudio.transforms import MelSpectrogram
-
+import ipdb
 
 def pad_to(signal, num_samples):
     
@@ -24,11 +24,10 @@ def pad_to(signal, num_samples):
     return signal
     
     
-def process_audio(audio_sample_path,annotation_file, target_sample_rate, num_samples, index, device):
+def process_audio(audio_sample_path, target_sample_rate, num_samples):
     
     signal, sr = torchaudio.load(audio_sample_path)
     
-    # resample if necessary
     if sr != target_sample_rate:
         resampler = torchaudio.transforms.Resample(sr, target_sample_rate)
         signal = resampler(signal)
@@ -40,26 +39,25 @@ def process_audio(audio_sample_path,annotation_file, target_sample_rate, num_sam
     # pad the signal in necessary
     signal = pad_to(signal, num_samples)
     
-    return signal, annotation_file.iloc[index, 6]
+    return signal
 
 class UrbanSoundDataset(Dataset):
 
     def __init__(self,
                  config,
+                 annotations, 
                  num_samples,
-                 device):
+                 ):
         
-        if config["fast_run"]:
-            self.annotations = pd.read_csv(config["data"]["metadata_file"])[:200]
-        else:
-            self.annotations = pd.read_csv(config["data"]["metadata_file"])
+        
+        self.annotations = annotations
         
         self.audio_dir = config["data"]["audio_dir"]
-        self.device = device
         
-        sample_rate = config["feats"]["sample_rate"]
+        self.paths_list = self.annotations.apply(lambda row: os.path.join(self.audio_dir, f"fold{row[5]}", row[0]), axis=1)
         
-        self.target_sample_rate = sample_rate
+     
+        self.target_sample_rate = config["feats"]["sample_rate"]
         self.num_samples = num_samples
 
     def __len__(self):
@@ -67,15 +65,10 @@ class UrbanSoundDataset(Dataset):
 
     def __getitem__(self, index):
         
-        fold = f"fold{self.annotations.iloc[index, 5]}"
-        audio_sample_path = os.path.join(self.audio_dir, fold, self.annotations.iloc[index, 0])
+        signal = process_audio(self.paths_list[index], self.target_sample_rate, self.num_samples)
         
-        signal, label = process_audio(audio_sample_path, self.annotations, self.target_sample_rate, self.num_samples, index, self.device)
+        return signal, self.annotations.iloc[index, 6]
         
-        #signal = self.transformation(signal)
-        
-        return signal, label
-
     
 
     
