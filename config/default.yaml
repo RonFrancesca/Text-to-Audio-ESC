@@ -5,7 +5,7 @@ mode: "test"
 training:
   #batch size: [synth, weak, unlabel]
   batch_size: 256
-  batch_size_val: 24
+  batch_size_val: 128
   n_epochs: 1 # max num epochs
   val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
 testing:

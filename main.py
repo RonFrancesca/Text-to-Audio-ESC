@@ -62,9 +62,10 @@ def init(argv=None):
 def train_one_epoch(model, data_loader, transformation, loss_fn, optimizer, device):
     
     num_batches = len(data_loader.dataset) / 256
-    print(f"Number of batches: {num_batches}")
+    #print(f"Number of batches: {num_batches}")
     transformation.to(device)
     running_loss = 0.
+    model.train()
 
 
     for _, (inputs, targets) in enumerate(tqdm(data_loader)):
@@ -90,15 +91,80 @@ def train_one_epoch(model, data_loader, transformation, loss_fn, optimizer, devi
     
     return running_loss / num_batches
 
-def train(model, data_loader, transformation, loss_fn, optimiser, device, epochs):
+def val_one_epoch(model, data_loader, transformation, loss_fn, optimizer, device):
+    
+    num_batches = len(data_loader.dataset) / 128
+    #print(f"Number of batches: {num_batches}")
+    transformation.to(device)
+    running_loss = 0.
+    model.eval()
+
+    with torch.no_grad():
+        for _, (inputs, targets) in enumerate(tqdm(data_loader)):
+                
+            inputs, targets = inputs.to(device), targets.to(device)
+            inputs = transformation(inputs)
+
+            # make prediction for this batch
+            predictions = model(inputs)
+
+            # Compute the loss 
+            loss = loss_fn(predictions, targets)
+            running_loss += loss.detach().item()
+    
+    return running_loss / num_batches
+
+def train(model, 
+          train_loader, 
+          val_loader, 
+          transformation, 
+          loss_fn, 
+          optimiser,
+          device, 
+          epochs, 
+          checkpoint_folder, 
+          early_stop_patience=20
+    
+    ):
+    
+    best_epoch = 0
     
     for i in tqdm(range(epochs)):
-        model.train(True)
+        
         print(f"Epoch: {i+1}")
-        train_loss = train_one_epoch(model, data_loader, transformation, loss_fn, optimiser, device)
+        # training epoch
+        train_loss = train_one_epoch(model, train_loader, transformation, loss_fn, optimiser, device)
         print(f"Train_loss: {train_loss}")
-    print("Training is done ")
+        
+        val_loss = val_one_epoch(model, val_loader, transformation, loss_fn, optimiser, device)
+        print(f"Val_loss: {val_loss}")
+        
+        # Handle saving best model + early stopping
+        if i == 0:
+            val_loss_best = val_loss
+            early_stop_counter = 0
+            saved_model_path = os.path.join(checkpoint_folder, "urban-sound-cnn.pth")
+            torch.save(model.state_dict(), saved_model_path)
+        
+        if i > 0 and val_loss < val_loss_best:
+            saved_model_path = saved_model_path
+            torch.save(model.state_dict(), saved_model_path)
+            val_loss_best = val_loss
+            early_stop_counter = 0
+            best_epoch = i
+        
+        else:
+            early_stop_counter += 1
+            print('Patience status: ' + str(early_stop_counter) + '/' + str(early_stop_patience))
 
+        # Early stopping
+        if early_stop_counter > early_stop_patience:
+            print('Training finished at epoch ' + str(i))
+            break
+    
+    print(f"Model saved at epoch: {best_epoch}")
+    print("Training is done ")
+    
 
 if __name__== "__main__":
     
@@ -130,17 +196,37 @@ if __name__== "__main__":
     annotations = pd.read_csv(config["data"]["metadata_file"])
     
     #paths_list = annotations.apply(lambda row: os.path.join(audio_dir, f"fold{row[5]}", row[0]), axis=1)
+    
+    
+    # split train and test dataset
     train_dataset, test_dataset = train_test_split(annotations, shuffle=False, test_size=0.2, random_state=42)
+    
+    # reset index for the testing set
+    test_dataset = test_dataset.reset_index(drop=True)
+    
+    # split the test set into validation and test set
+    val_dataset, test_dataset = train_test_split(annotations, shuffle=False, test_size=0.1, random_state=42)
+    
+    # reset the index for the test dataset
     test_dataset = test_dataset.reset_index(drop=True)
     
     
     # dataset
     usd_train = UrbanSoundDataset(config, train_dataset, num_samples)
+    usd_val = UrbanSoundDataset(config, val_dataset, num_samples)
     usd_test = UrbanSoundDataset(config, test_dataset, num_samples)
     
     train_data_loader = DataLoader(usd_train, 
                         shuffle=True,
                         batch_size=config["training"]["batch_size"],
+                        num_workers=torch.cuda.device_count() * 8,
+                        prefetch_factor=4,
+                        pin_memory=True
+                        )
+    
+    val_data_loader = DataLoader(usd_val, 
+                        shuffle=True,
+                        batch_size=config["training"]["batch_size_val"],
                         num_workers=torch.cuda.device_count() * 8,
                         prefetch_factor=4,
                         pin_memory=True
@@ -188,15 +274,15 @@ if __name__== "__main__":
         n_mels=config["feats"]["n_mels"]
     )
     
+    checkpoint_folder = config["data"]["checkpoint_folder"]
     
-    train(model, train_data_loader, transformation, loss_fn, optimiser, device, n_epochs)
-    torch.save(model.state_dict(), os.path.join(config["data"]["checkpoint_folder"], "urban-sound-cnn.pth"))
+    train(model, train_data_loader, val_data_loader, transformation, loss_fn, optimiser, device, n_epochs, checkpoint_folder)
+    #torch.save(model.state_dict(), os.path.join(config["data"]["checkpoint_folder"], "urban-sound-cnn.pth"))
     print("Model trained and stored at urban-sound-cnn.pth")
     
     ###############
     ## inference ##
     ############### 
-    checkpoint_folder = config["data"]["checkpoint_folder"]
     
     # load the model
     #model = CNNNetwork(config)
