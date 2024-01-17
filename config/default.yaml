@@ -3,9 +3,8 @@ gpu: "2"
 allow_growth: "True"
 mode: "test"
 training:
-  #batch size: [synth, weak, unlabel]
-  batch_size: 256
-  batch_size_val: 128
+  batch_size: 100
+  batch_size_val: 50
   n_epochs: 1 # max num epochs
   val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
 testing:
@@ -17,6 +16,7 @@ data: # change with your paths if different.
   audio_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
   checkpoint_folder: "./checkpoint"
   audio_max_len: 4
+  patch_lenght_s: 3
   fs: 44100
 opt:
   lr: 0.01
@@ -38,7 +38,7 @@ net:
   nclass: 10
   in_channel: [1, 24, 48]
   out_channel: [24, 48, 48]
-  dense_in: [3456, 64]
+  dense_in: [2400, 64]
   dense_out: [64, 10]
   
 

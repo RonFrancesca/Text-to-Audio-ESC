@@ -55,7 +55,6 @@ class UrbanSoundDataset(Dataset):
         self.audio_dir = config["data"]["audio_dir"]
         
         self.paths_list = self.annotations.apply(lambda row: os.path.join(self.audio_dir, f"fold{row[5]}", row[0]), axis=1)
-        
      
         self.target_sample_rate = config["feats"]["sample_rate"]
         self.num_samples = num_samples
