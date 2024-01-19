@@ -61,8 +61,8 @@ class CNNNetwork(nn.Module):
         x = self.cnn(input_data)
         x = self.flatten(x)
         logits = self.dense_layers(x)
-        predictions = self.softmax(logits)
-        return predictions
+        #predictions = self.softmax(logits)
+        return logits
         
 if __name__ == "__main__":
 

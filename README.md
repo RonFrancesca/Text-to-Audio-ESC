@@ -1,7 +1,14 @@
 todo:
-- ADD THE PATCH RANDOM SPECTROGRAM CODE
-- TRAIN THE WHOLE MODEL
-- ADD THE CROSS-FOLDER VALIDATION LOOP
+
+understad why the network is not working: 
+- normalization: how do ohter people do
+
+###########################################
+
+- CLEAN THE CODE
+- GENERATE DATA model 1
+- GENERATE DATA model 2
+- GENERATE DATA model 3
 - ADD MODULES TO THE CODE BECAUSE NOW IT IS BECOMING CONFUSING
 
 Notice: 

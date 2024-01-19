@@ -18,6 +18,9 @@ from tqdm import tqdm
 from torchaudio.transforms import MelSpectrogram, AmplitudeToDB
 import ipdb
 import numpy as np
+from utils import plot_figure
+from torch.utils.tensorboard import SummaryWriter
+
 
 class_mapping = [
    "0",  
@@ -31,6 +34,8 @@ class_mapping = [
    "8", 
    "9"
 ]
+
+
 
 
 def init(argv=None):
@@ -60,7 +65,14 @@ def init(argv=None):
         
     return configs
 
-def log_mels(mels):
+def normalize_tensor(input_tensor):
+	"""Performs 0-1 normalization"""
+	min_tensor = input_tensor.min()
+	max_tensor = input_tensor.max()
+	norm_tensor = (input_tensor - min_tensor)/(max_tensor - min_tensor)
+	return norm_tensor
+
+def log_mels(mels, i):
     """ Apply the log transformation to mel spectrograms.
     Args:
         mels: torch.Tensor, mel spectrograms for which to apply log.
@@ -71,8 +83,14 @@ def log_mels(mels):
 
     amp_to_db = AmplitudeToDB(stype="amplitude").to(device)
     amp_to_db.amin = 1e-5  # amin= 1e-5 as in librosa
-    #return amp_to_db(mels).clamp(min=-50, max=80)  # clamp taken fromn desed task
-    return amp_to_db(mels)
+    log_output = amp_to_db(mels)
+    log_output = log_output.clamp(min=-50, max=80)  
+    plot_figure(log_output[0].cpu().numpy().squeeze(), f'log_spectogram_{i}.png')
+    # log_output = (log_output + 50) / (80+50)
+    #offset = 1e-5
+    #log = torch.log(mels + offset)
+    log_output = normalize_tensor(log_output)
+    return log_output
 
 def take_patch_frame(patch_lenght):
     
@@ -96,18 +114,22 @@ def train_one_epoch(model,
     running_loss = 0.
     model.train()
 
-
-    for _, (inputs, targets) in enumerate(tqdm(data_loader)):
+    for i, (inputs, targets) in enumerate(tqdm(data_loader)):
             
         inputs, targets = inputs.to(device), targets.to(device)
         
         # log-mel spectrogram
         inputs = transformation(inputs)
-        inputs = log_mels(inputs)
+        plot_figure(inputs[0].cpu().numpy().squeeze(), f'melspectogram_{i}')
+        
+        
+        inputs = log_mels(inputs, i)
+        plot_figure(inputs[0].cpu().numpy().squeeze(), f'normalized-log-melspectogram_{i}')
         
         # TAKE ONLY THREE SECONDS PATCH
         start_frame, end_frame = take_patch_frame(patch_lenght)
         inputs = inputs[:, :, :, start_frame:end_frame]
+        plot_figure(inputs[0].cpu().numpy().squeeze(), f'patchTF-melspectogram_{i}')
 
         # Zero your gradients for every batch!
         optimizer.zero_grad()
@@ -124,6 +146,7 @@ def train_one_epoch(model,
 
         running_loss += loss.detach().item()
     
+    
     return running_loss / num_batches
 
 def val_one_epoch(model, data_loader, transformation, loss_fn, device, patch_lenght):
@@ -135,11 +158,11 @@ def val_one_epoch(model, data_loader, transformation, loss_fn, device, patch_len
     model.eval()
 
     with torch.no_grad():
-        for _, (inputs, targets) in enumerate(tqdm(data_loader)):
+        for i, (inputs, targets) in enumerate(tqdm(data_loader)):
                 
             inputs, targets = inputs.to(device), targets.to(device)
             inputs = transformation(inputs)
-            inputs = log_mels(inputs)
+            inputs = log_mels(inputs, i)
             
             start_frame, end_frame = take_patch_frame(patch_lenght)
             inputs = inputs[:, :, :, start_frame:end_frame]
@@ -168,9 +191,9 @@ def train(model,
     
     best_epoch = 0
     
-    for i in tqdm(range(epochs)):
+    for n_epoch in tqdm(range(epochs)):
         
-        print(f"Epoch: {i+1}")
+        print(f"Epoch: {n_epoch+1}")
         # training epoch
         train_loss = train_one_epoch(model, train_loader, transformation, loss_fn, optimiser, device, patch_lenght)
         print(f"Train_loss: {train_loss:.2f}")
@@ -178,27 +201,31 @@ def train(model,
         val_loss = val_one_epoch(model, val_loader, transformation, loss_fn, device, patch_lenght)
         print(f"Val_loss: {val_loss:.2f}")
         
+        # adding the loss to the plot
+        writer.add_scalar('Loss/train', train_loss, n_epoch)
+        writer.add_scalar('Loss/val', val_loss, n_epoch)
+        
         # Handle saving best model + early stopping
-        if i == 0:
+        if n_epoch == 0:
             val_loss_best = val_loss
             early_stop_counter = 0
             saved_model_path = os.path.join(checkpoint_folder, "urban-sound-cnn_1.pth")
             torch.save(model.state_dict(), saved_model_path)
         
-        if i > 0 and val_loss < val_loss_best:
+        if n_epoch > 0 and val_loss < val_loss_best:
             saved_model_path = saved_model_path
             torch.save(model.state_dict(), saved_model_path)
             val_loss_best = val_loss
             early_stop_counter = 0
-            best_epoch = i
+            best_epoch = n_epoch
         
         else:
             early_stop_counter += 1
-            print('Patience status: ' + str(early_stop_counter) + '/' + str(early_stop_patience))
+            print(f'Patience status: {early_stop_counter}/{early_stop_patience}')
 
         # Early stopping
         if early_stop_counter > early_stop_patience:
-            print('Training finished at epoch ' + str(i))
+            print(f'Training finished at epoch: {n_epoch}')
             break
     
     
@@ -235,6 +262,7 @@ if __name__== "__main__":
     num_samples_3s = sample_rate * config["data"]["patch_lenght_s"]
     patch_lenght = int((num_samples_3s / config["feats"]["n_window"]) - 1)
     
+    writer = SummaryWriter(config["log_dir"])
     
     # dataset temporary
     annotations = pd.read_csv(config["data"]["metadata_file"])
@@ -243,8 +271,12 @@ if __name__== "__main__":
     loss_train_history = []
     loss_val_history = []
     
+    if config['fast_run']:
+        max_fold = 2
+    else:
+        max_fold = 11
     
-    for n_fold in range(1, 11):
+    for n_fold in range(1, max_fold):
         print(f"Testing folder: {n_fold}")
         val_fold = (n_fold + 1) % 11
         if val_fold == 0:
@@ -319,9 +351,9 @@ if __name__== "__main__":
                                     lr=config["opt"]["lr"]
                                     )
 
-        n_epochs = 1 if config["fast_run"] else config["training"]["n_epochs"]
+        n_epochs = 25 if config["fast_run"] else config["training"]["n_epochs"]
         
-        # TOD: plot the logaritm
+        
         transformation = MelSpectrogram(
             sample_rate=sample_rate, 
             n_fft=config["feats"]["n_window"],
@@ -363,13 +395,13 @@ if __name__== "__main__":
         # get a sample from urban sound set for inference
         with torch.no_grad():
             
-            for inputs, labels in test_data_loader:  # Use the test_loader for testing
+            for i, (inputs, labels) in enumerate(tqdm(test_data_loader)):  # Use the test_loader for testing
                 inputs, labels = inputs.to(device), labels.to(device)
                 transformation = transformation.to(device)
                 
                 # log-mel spectogram
                 inputs = transformation(inputs)
-                inputs = log_mels(inputs)
+                inputs = log_mels(inputs, i)
                 
                 start_frame, end_frame = take_patch_frame(patch_lenght)
                 inputs = inputs[:, :, :, start_frame:end_frame]
@@ -393,8 +425,8 @@ if __name__== "__main__":
         accuracy_history.append(accuracy_score(true_labels, predicted_labels))
     
     #ipdb.set_trace() 
-    print(f"Loss_train_final: {np.mean(loss_train_history):.2f}%")
-    print(f"Loss_validation_final: {np.mean(loss_val_history):.2f}%")
+    print(f"Loss_train_final: {np.mean(loss_train_history):.2f}")
+    print(f"Loss_validation_final: {np.mean(loss_val_history):.2f}")
     print(f"Accuracy: {np.mean(accuracy_history) * 100:.2f}%")
     
     
