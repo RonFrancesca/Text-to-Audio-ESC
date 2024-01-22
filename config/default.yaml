@@ -1,13 +1,13 @@
-fast_run: 1
-gpu: "4"
+fast_run: 0
+gpu: "2"
 allow_growth: "True"
 mode: "test"
-# Specify the log directory
 log_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/log_dir"
+session_id: "frames_by_frames_001"
 training:
   batch_size: 100
   batch_size_val: 50
-  n_epochs: 25 # max num epochs
+  n_epochs: 50 # max num epochs
   val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
 testing:
   batch_size: 1
@@ -19,9 +19,8 @@ data: # change with your paths if different.
   checkpoint_folder: "./checkpoint"
   audio_max_len: 4
   patch_lenght_s: 3
-  fs: 44100
 opt:
-  lr: 0.01
+  lr: 0.001
 feats:
   n_mels: 128
   n_filters: 2048
@@ -29,7 +28,7 @@ feats:
   n_window: 1024
   sample_rate: 44100
   f_min: 0
-  f_max: 8000
+  f_max: 22050
 net:
   kernel_size: 5
   stride: 1
