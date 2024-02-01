@@ -1,8 +1,12 @@
 import os
 import torch
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from torchaudio.transforms import MelSpectrogram, AmplitudeToDB
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+import glob 
 
 def plot_figure(data, filename):
     # Plot Mel Spectrogram
@@ -16,6 +20,22 @@ def plot_figure(data, filename):
     plt.ylabel('Mel Frequency')
     plt.savefig(os.path.join(f'./img/{filename}'))
     plt.close()
+    
+def save_confusion_matrix(y_true, y_pred, classes, filename):
+    # Generate confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    
+    # Plot confusion matrix using seaborn heatmap
+    plt.figure(figsize=(len(classes), len(classes)))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes, yticklabels=classes)
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    
+    # Save the plot to a file
+    plt.savefig(filename)
+    plt.close()
+
     
 
 def plot_audio(data, filename):
@@ -101,3 +121,29 @@ def get_transformations(config):
     )
     
     return transformation
+
+def collect_generated_metadata(
+    metadata_fold, 
+    test_fold, 
+    val_fold):
+    
+    
+    audio_gen_df = pd.DataFrame(columns=['slice_file_name', 'class', 'classid'])
+    
+    fold_folders = [folder for folder in os.listdir(metadata_fold) if folder.startswith('fold_') and int(folder.split('_')[1]) not in [test_fold, val_fold]]
+
+    # Iterate through each fold folder
+    for fold_folder in fold_folders:
+        # Get the path to the CSV file in the current fold folder
+        csv_file_path = glob.glob(os.path.join(metadata_fold, fold_folder, '*.csv'))
+        
+        # Check if a CSV file exists in the folder
+        if csv_file_path:
+            # Read the CSV file into a DataFrame
+            df = pd.read_csv(csv_file_path[0])  # Assuming there's only one CSV file per folder
+            
+            # Append the DataFrame to the list of DataFrames
+            audio_gen_df = pd.concat([audio_gen_df, df], ignore_index=True)
+    
+    return audio_gen_df
+    

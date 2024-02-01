@@ -1,24 +1,29 @@
 fast_run: 0
-gpu: "2"
+audio_used: 'gen' # gen or original (according to if the audio used for training the network is original or generated)
+gpu: "4"
 allow_growth: "True"
-mode: "test"
 log_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/log_dir"
-session_id: "frames_by_frames_001"
+session_id: "audio_LDM_paper"
+model: Cnn # Net or Paper, according to the model that we want to initilize
 training:
-  batch_size: 100
-  batch_size_val: 50
+  batch_size: 128
+  batch_size_val: 64
   n_epochs: 50 # max num epochs
   val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
 testing:
   batch_size: 1
+  mode: a # [a or f] for the entire dataset (all clip) and f is for frame by frame at validation and testing time
 data: # change with your paths if different.
   # NOTE: if you have data in 44kHz only then synth_folder will be the path where
   # resampled data will be placed.
   metadata_file: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
+  metadata_file_generated: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_dataset"
   audio_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
+  aduio_dir_generated: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_dataset"
   checkpoint_folder: "./checkpoint"
   audio_max_len: 4
   patch_lenght_s: 3
+  normalization: "spec" # [spec or dataset], spec when normalization spec by spec, dataset when normalizing considering the whole dataset
 opt:
   lr: 0.001
 feats:

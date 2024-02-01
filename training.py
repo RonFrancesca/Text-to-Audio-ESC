@@ -55,7 +55,13 @@ def train_one_epoch(
     
     return running_loss / num_batches
 
-def val_one_epoch(model, data_loader, loss_fn, device):
+def val_one_epoch(
+        model, 
+        data_loader, 
+        loss_fn, 
+        device, 
+        mode
+    ):
     
     num_batches = len(data_loader.dataset) / data_loader.batch_size
     
@@ -66,8 +72,10 @@ def val_one_epoch(model, data_loader, loss_fn, device):
     with torch.no_grad():
         for i, (inputs, targets) in enumerate(tqdm(data_loader)):
             
-            inputs = torch.reshape(inputs,(-1,1,128,128))
-            targets = targets.ravel()
+            if mode == 'f':
+                inputs = torch.reshape(inputs,(-1,1,128,128))
+                targets = targets.ravel()
+            
             inputs, targets = inputs.to(device), targets.to(device)
             # inputs = transformation(inputs)
             # inputs = log_mels(inputs, device)
@@ -96,6 +104,7 @@ def train(model,
           device, 
           checkpoint_folder, 
           writer, 
+          mode='a',
           early_stop_patience=100, 
           checkpoint_filename = "urban-sound-cnn.pth", 
     ):
@@ -110,7 +119,7 @@ def train(model,
         train_loss = train_one_epoch(model, train_data_loader, loss_fn, optimizer, device)
         print(f"Train_loss: {train_loss:.2f}")
         
-        val_loss = val_one_epoch(model, val_data_loader, loss_fn, device)
+        val_loss = val_one_epoch(model, val_data_loader, loss_fn, device, mode)
         print(f"Val_loss: {val_loss:.2f}")
         
         # adding training and validation loss to tensorboard writer
@@ -140,8 +149,5 @@ def train(model,
             print(f'Training finished at epoch: {n_epoch}')
             break
     
-    
-    print(f"Model saved at epoch: {best_epoch}")
-    print(f"Model saved at: {saved_model_path}")
     print("Training is done!")
-    return train_loss, val_loss_best
+    return train_loss, val_loss_best, best_epoch
