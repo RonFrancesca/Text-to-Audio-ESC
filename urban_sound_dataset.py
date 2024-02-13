@@ -66,13 +66,23 @@ class UrbanSoundDataset(Dataset):
                  mean, 
                  std, 
                  patch_lenght_samples,
-                 device
+                 device, 
+                 origin='real'
                  ):
         
         
         self.annotations = annotations
-        self.audio_dir = config["data"]["audio_dir"]
-        self.paths_list = self.annotations.apply(lambda row: os.path.join(self.audio_dir, f"fold{row[5]}", row[0]), axis=1)
+        self.origin = origin
+        
+        if self.origin == 'real':
+            # original dataset
+            self.audio_dir = config["data"]["audio_dir_real"]
+            self.paths_list = self.annotations.apply(lambda row: os.path.join(self.audio_dir, f"fold{row[5]}", row[0]), axis=1)
+        else:
+            # generated dataset
+            self.audio_dir = config["data"]["audio_dir_fake"]
+            self.paths_list = list(annotations['slice_file_name'])
+        
         self.target_sample_rate = config["feats"]["sample_rate"]
         self.num_samples = num_samples
         self.mean = mean
@@ -82,6 +92,7 @@ class UrbanSoundDataset(Dataset):
         self.patch_lenght_samples = patch_lenght_samples
         self.target_sample_rate = config["feats"]["sample_rate"]
         self.window_size = config["feats"]["n_window"]
+        
 
     def __len__(self):
         return len(self.annotations)
@@ -101,8 +112,13 @@ class UrbanSoundDataset(Dataset):
                 
         start_frame, end_frame = take_patch_frames(self.patch_lenght_samples, self.target_sample_rate, self.window_size)
         signal = signal[:, :, start_frame:end_frame]
+        
+        if self.origin == 'real':
+            label = self.annotations.iloc[index, 6]
+        else:
+            label = self.annotations.iloc[index, 2]
     
-        return signal, self.annotations.iloc[index, 6]
+        return signal, label
     
 class UrbanSoundDataset_generated(Dataset):
 
@@ -149,7 +165,8 @@ class UrbanSoundDataset_generated(Dataset):
         start_frame, end_frame = take_patch_frames(self.patch_lenght_samples, self.target_sample_rate, self.window_size)
         signal = signal[:, :, start_frame:end_frame]
     
-        return signal, self.annotations.iloc[index, 2]
+        return signal, self.annotations.iloc[index, 2]       
+    
         
 # TODO: could be done to take from the UrbanSoundDataset directy
 class UrbanSoundDatasetValTest(Dataset):

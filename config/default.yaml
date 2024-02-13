@@ -1,14 +1,16 @@
 fast_run: 0
-audio_used: 'gen' # gen or original (according to if the audio used for training the network is original or generated)
-gpu: "4"
+#audio_used: 'both' # gen or original (according to if the audio used for training the network is original or generated)
+gpu: "3"
 allow_growth: "True"
+base_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class"
 log_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/log_dir"
-session_id: "audio_LDM_paper"
-model: Cnn # Net or Paper, according to the model that we want to initilize
+session_id: "cnn_paper_audiogen_melband_128"
+model: Cnn # Net or Cnn, according to the model that we want to initilize
+concat_data: 1 # if contact data is flagged, then I am using both dataset, otherwise just the reale one
 training:
   batch_size: 128
   batch_size_val: 64
-  n_epochs: 50 # max num epochs
+  n_epochs: 100 # max num epochs
   val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
 testing:
   batch_size: 1
@@ -16,10 +18,10 @@ testing:
 data: # change with your paths if different.
   # NOTE: if you have data in 44kHz only then synth_folder will be the path where
   # resampled data will be placed.
-  metadata_file: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
-  metadata_file_generated: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_dataset"
-  audio_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
-  aduio_dir_generated: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_dataset"
+  metadata_file_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
+  metadata_file_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOGEN_dataset"
+  audio_dir_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
+  audio_dir_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOGEN_dataset"
   checkpoint_folder: "./checkpoint"
   audio_max_len: 4
   patch_lenght_s: 3
@@ -31,9 +33,9 @@ feats:
   n_filters: 2048
   hop_length: 1024
   n_window: 1024
-  sample_rate: 44100
+  sample_rate: 16000
   f_min: 0
-  f_max: 22050
+  f_max: 8000
 net:
   kernel_size: 5
   stride: 1
@@ -44,7 +46,7 @@ net:
   nclass: 10
   in_channel: [1, 24, 48]
   out_channel: [24, 48, 48]
-  dense_in: [2400, 64]
+  dense_in: [336, 64]
   dense_out: [64, 10]
   
 

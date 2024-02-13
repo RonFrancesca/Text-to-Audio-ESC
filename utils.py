@@ -8,6 +8,20 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import glob 
 
+def get_classes():
+    classes_list = ["air_conditioner", 
+                   "car_horn", 
+                   "children_playing",
+                   "dog_bark", 
+                   "drilling", 
+                   "engine_idling", 
+                   "gun_shot", 
+                   "jackhammer", 
+                   "siren", 
+                   "street_music"]
+    
+    return classes_list
+
 def plot_figure(data, filename):
     # Plot Mel Spectrogram
 
@@ -18,7 +32,9 @@ def plot_figure(data, filename):
     plt.title('Mel Spectrogram')
     plt.xlabel('Time')
     plt.ylabel('Mel Frequency')
-    plt.savefig(os.path.join(f'./img/{filename}'))
+    plot_folder = './img/both_dataset'
+    os.makedirs(plot_folder, exist_ok=True)
+    plt.savefig(os.path.join(plot_folder, filename))
     plt.close()
     
 def save_confusion_matrix(y_true, y_pred, classes, filename):
@@ -146,4 +162,22 @@ def collect_generated_metadata(
             audio_gen_df = pd.concat([audio_gen_df, df], ignore_index=True)
     
     return audio_gen_df
+
+def collect_val_generated_metadata(metadata_fold, val_fold):
     
+    audio_gen_df = pd.DataFrame(columns=['slice_file_name', 'class', 'classid'])
+    
+    fold_folders = [folder for folder in os.listdir(metadata_fold) if folder.startswith('fold_') and int(folder.split('_')[1]) in [val_fold]]
+
+    # should be only one folder
+    csv_file_path = glob.glob(os.path.join(metadata_fold, fold_folders[0], '*.csv'))
+        
+    # Check if a CSV file exists in the folder
+    if csv_file_path:
+        # Read the CSV file into a DataFrame
+        df = pd.read_csv(csv_file_path[0])  # Assuming there's only one CSV file per folder
+            
+        # Append the DataFrame to the list of DataFrames
+        audio_gen_df = pd.concat([audio_gen_df, df], ignore_index=True)
+    
+    return audio_gen_df

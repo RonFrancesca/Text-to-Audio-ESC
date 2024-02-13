@@ -36,6 +36,7 @@ def train_one_epoch(
         # # consider only three random second patch
         # start_frame, end_frame = take_patch_frames(patch_lenght, sample_rate, window_size)
         # inputs = inputs[:, :, :, start_frame:end_frame]
+        
         plot_figure(inputs[0].cpu().numpy().squeeze(), f'network_input_{i}')
 
         # Zero your gradients for every batch!

@@ -19,9 +19,9 @@ from urban_sound_dataset import UrbanSoundDataset, UrbanSoundDatasetValTest, Urb
 from training import train
 from inference import inference
 from data_preprocess import extract_stat_data
-from utils import save_confusion_matrix, collect_generated_metadata
+from utils import save_confusion_matrix, collect_generated_metadata, collect_val_generated_metadata, get_classes
 
-#import ipdb
+import ipdb
 
 def init(argv=None):
     
@@ -57,11 +57,19 @@ if __name__== "__main__":
 
     print(f"Using device: {device}")
 
-    # get audio and metadata path
-    metadata_file = config["data"]["metadata_file"]
-    audio_dir = config["data"]["audio_dir"]
+    # metadata file for real and fake dataset
+    metadata_file_real = config["data"]["metadata_file_real"]
+    metadata_file_fake = config["data"]["metadata_file_fake"]
+    
+    # audio path for real and fake dataset
+    audio_dir_real = config["data"]["audio_dir_real"]
+    audio_dir_fake = config["data"]["audio_dir_fake"]
+    
+    # make all the necessary folder
     checkpoint_folder = os.path.join(config["data"]["checkpoint_folder"], config["session_id"])
     os.makedirs(checkpoint_folder, exist_ok=True)
+    accuracy_folder = os.path.join(config["base_dir"], 'accuracy')
+    os.makedirs(accuracy_folder, exist_ok=True)
     
     # features for audio
     sample_rate = config["feats"]["sample_rate"]
@@ -75,27 +83,23 @@ if __name__== "__main__":
     
     # get writer for tensorboard log
     log_fold = os.path.join(config["log_dir"], config["session_id"])
-    #writer = log.get_writer(config["log_dir"])
     
     # get dataset annotations
-    annotations = pd.read_csv(config["data"]["metadata_file"])
+    annotations_real = pd.read_csv(config["data"]["metadata_file_real"])
     
     # folder for cross validation
     if config['fast_run']:
-        max_fold = annotations["fold"].min() + 1
-        
+        max_fold = annotations_real["fold"].min() + 1
     else:
-        max_fold = annotations["fold"].max() + 1
+        max_fold = annotations_real["fold"].max() + 1
     
-    # initiate the list for the metrics
-    # accuracy
+    # initiate the list for the metricc: accuracy, loss train and loss validation
     accuracy_history = []
-    
-    # training loss
     loss_train_history = []
-    
-    # validation loss
     loss_val_history = []
+    
+    # definition of classes
+    classes = get_classes()
     
     for n_fold in range(1, max_fold):
         
@@ -116,61 +120,99 @@ if __name__== "__main__":
         print(f"Validation folder: {val_fold}")
 
         # training data: all the files from any folder but the testing and validation folder
-        if config["audio_used"] == 'original':
-            train_data = annotations[~annotations['fold'].isin([n_fold, val_fold])]
+        if config["concat_data"] == 0:
+            # training from urban sound dataset - only original dataset
+            train_data_real = annotations_real[~annotations_real['fold'].isin([n_fold, val_fold])]
             if config["fast_run"] == 1:
-                train_data = train_data[:100]
-            train_data.reset_index(drop=True, inplace=True)
-            train_data_path = train_data.apply(lambda row: os.path.join(config["data"]["audio_dir"], f"fold{row[5]}", row[0]), axis=1)
-        elif config["audio_used"] == 'gen':
-            # get all the data from the folders different than the testing and validation
-            train_data = collect_generated_metadata(config["data"]["metadata_file_generated"], n_fold, val_fold)
+                train_data_real = train_data_real[:100]
+            train_data_real.reset_index(drop=True, inplace=True)
+            
+            # it should not be important until we don't normalize the entire dataset
+            #train_data_path = train_data.apply(lambda row: os.path.join(config["data"]["audio_dir_real"], f"fold{row[5]}", row[0]), axis=1)
+            
+            # validation from urban sound
+            val_data_real = annotations_real[annotations_real['fold'] == val_fold]
+            val_data_real.reset_index(drop=True, inplace=True)
+        
+        elif config["concat_data"]:
+            # get all the data from the folders different than the testing and validation folder, from the generated dataset
+            
+            # training fake
+            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], n_fold, val_fold)
             if config["fast_run"] == 1:
-                train_data = train_data[:100]
+                train_data_fake = train_data_fake[:100]
+            
+            # training real
+            train_data_real = annotations_real[~annotations_real['fold'].isin([n_fold, val_fold])]
+            if config["fast_run"] == 1:
+                train_data_real = train_data_real[:100]
+            train_data_real.reset_index(drop=True, inplace=True)
+           
+            # validation fake
+            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], val_fold)
+                        
+            # validation real
+            val_data_real = annotations_real[annotations_real['fold'] == val_fold]
+            val_data_real.reset_index(drop=True, inplace=True)
+        
         else:
-            print("Dataset not suppported")
-        
-        
-        val_data = annotations[annotations['fold'] == val_fold]
-        val_data.reset_index(drop=True, inplace=True)
+            print("Dataset not suppported yet")
         
         # dataset normalization 
         if config["data"]["normalization"] == 'dataset':
-            file_path_mean = f"./tf_{n_fold}_vf_{val_fold}_mean.npy"
-            file_path_std = f"./tf_{n_fold}_vf_{val_fold}_std.npy"
-            if os.path.exists(file_path_mean) and os.path.exists(file_path_std):
-                mean_train = np.load(file_path_mean)
-                std_train = np.load(file_path_std)
-                print(f"Mean: {mean_train}, std: {std_train}")
-            else:
-                mean_train, std_train = extract_stat_data(train_data_path, config, sample_rate, num_samples)
-                np.save(file_path_mean, mean_train)
-                np.save(file_path_std, std_train)
+            # make a directory where to save mena and std
+            # mean_dir_path = os.path.join(config['base_dir'], "mean_std")
+            # os.makedirs(mean_dir_path, exist_ok=True)
+            
+            # file_path_mean = os.path.join(mean_dir_path, f"./tf_{n_fold}_vf_{val_fold}_mean.npy")
+            # file_path_std = os.path.join(mean_dir_path, f"./tf_{n_fold}_vf_{val_fold}_std.npy")
+            
+            # if os.path.exists(file_path_mean) and os.path.exists(file_path_std):
+            #     # the files already exist in the directory and have been calculated already
+            #     mean_train = np.load(file_path_mean)
+            #     std_train = np.load(file_path_std)
+            #     print(f"Mean: {mean_train}, std: {std_train}")
+            # else:
+            #     # the files need to be calculated and saved in the mean and std folder
+            #     mean_train, std_train = extract_stat_data(train_data_path, config, sample_rate, num_samples)
+            #     np.save(file_path_mean, mean_train)
+            #     np.save(file_path_std, std_train)
+            pass
+       
         elif config["data"]["normalization"] == 'spec':
             print("Normalizing spectogram by spectogram")
-            # need to be changed
             mean_train = None
             std_train = None
         else:
             print(f"Normalization not defined")
         
         # collecting dataset
-        if config["audio_used"] == "original":
-            # original dataset used
-            usd_train = UrbanSoundDataset(config, train_data, num_samples, mean_train, std_train, patch_lenght_samples, device)
-        elif config["audio_used"] == 'gen':
-            # generated dataset used
-            usd_train = UrbanSoundDataset_generated(config, train_data, num_samples, mean_train, std_train, patch_lenght_samples, device)
+        if config['concat_data']:
+            # I use both original and fake data to train my model
+            usd_train_real =  UrbanSoundDataset(config, train_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
+            usd_train_fake =  UrbanSoundDataset(config, train_data_fake, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='fake')
+            usd_train = torch.utils.data.ConcatDataset([usd_train_real, usd_train_fake])
         else:
-            print("Dataset not supported")
+            # I only use original data to train my model
+            usd_train =  UrbanSoundDataset(config, train_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
+        
         
         testing_mode = config["testing"]["mode"]
         if testing_mode == 'f':
+            # checking frame by frame. not used for now
             usd_val = UrbanSoundDatasetValTest(config, val_data, num_samples, mean_train, std_train, patch_lenght_samples, device)
         elif testing_mode == 'a':
-            usd_val = UrbanSoundDataset(config, val_data, num_samples, mean_train, std_train, patch_lenght_samples, device)
+            # testing considering the whole clip. 
+            if config['concat_data']:
+                # I use both original and fake data to validate my model
+                usd_val_real =  UrbanSoundDataset(config, val_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
+                usd_val_fake =  UrbanSoundDataset(config, val_data_fake, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='fake')
+                usd_val = torch.utils.data.ConcatDataset([usd_val_real, usd_val_fake])
+            else:
+                # I only use original date to validate my model
+                usd_val =  UrbanSoundDataset(config, val_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
         else:
-            # throw error
+            # need to add to throw the error
             print(f"Option not available")
         
         # dataloader for dataset
@@ -232,7 +274,7 @@ if __name__== "__main__":
         ## inference ##
         ############### 
         
-        test_data = annotations[annotations['fold'] == n_fold]
+        test_data = annotations_real[annotations_real['fold'] == n_fold]
         test_data.reset_index(drop=True, inplace=True)
         
         if testing_mode == 'f':
@@ -266,19 +308,6 @@ if __name__== "__main__":
         
          # calculate accuracy
         accuracy = accuracy_score(target_labels, predicted_labels)
-        
-        classes = ["air_conditioner", 
-                   "car_horn", 
-                   "children_playing",
-                   "dog_bark", 
-                   "drilling", 
-                   "engine_idling", 
-                   "gun_shot", 
-                   "jackhammer", 
-                   "siren", 
-                   "street_music"
-                   ]
-        
         confusion_matrix_filename = os.path.join(log_fold, f"fold_{n_fold}_cmx.png")
         save_confusion_matrix(target_labels, predicted_labels, classes, confusion_matrix_filename)
         print(f"Accuracy score for folder: {n_fold}: {accuracy * 100:.2f}%")
@@ -289,23 +318,22 @@ if __name__== "__main__":
 
         # Specify the file path
         session_id = config["session_id"]
-        file_path = f"accuracy_{session_id}.txt"
+        accuracy_file_path = os.path.join(accuracy_folder, f"accuracy_{session_id}.txt")
 
         # Check if the file exists
-        if os.path.exists(file_path):
+        if os.path.exists(accuracy_file_path):
             # If the file exists, open it in append mode ("a")
-            with open(file_path, "a") as file:
+            with open(accuracy_file_path, "a") as file:
                 # Append the sentence to the file
                 file.write(sentence + "\n")
         else:
             # If the file does not exist, open it in write mode ("w")
-            with open(file_path, "w") as file:
+            with open(accuracy_file_path, "w") as file:
                 # Write the sentence to the file
                 file.write(sentence + "\n")
         
         accuracy_history.append(accuracy)
-    
-    #ipdb.set_trace() 
+
     print(f"Loss_train_final: {np.mean(loss_train_history):.2f}")
     print(f"Loss_validation_final: {np.mean(loss_val_history):.2f}")
     print(f"Accuracy: {np.mean(accuracy_history) * 100:.2f}%")
