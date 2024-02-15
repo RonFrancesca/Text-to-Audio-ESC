@@ -22,6 +22,7 @@ from data_preprocess import extract_stat_data
 from utils import save_confusion_matrix, collect_generated_metadata, collect_val_generated_metadata, get_classes
 
 import ipdb
+import datetime
 
 def init(argv=None):
     
@@ -71,6 +72,10 @@ if __name__== "__main__":
     accuracy_folder = os.path.join(config["base_dir"], 'accuracy')
     os.makedirs(accuracy_folder, exist_ok=True)
     
+    # creating the folder to save the data
+    img_folder = os.path.join(config["data"]["img"], config["session_id"])
+    os.makedirs(img_folder, exist_ok=True)
+    
     # features for audio
     sample_rate = config["feats"]["sample_rate"]
     audio_max_len = config["data"]["audio_max_len"]
@@ -107,7 +112,7 @@ if __name__== "__main__":
         checkpoint_folder_fold = os.path.join(checkpoint_folder, f"fold_{n_fold}")
         os.makedirs(checkpoint_folder_fold, exist_ok=True)
         
-        writer = log.get_writer(os.path.join(log_fold, f"fold_{n_fold}"))
+        writer = log.get_writer(os.path.join(log_fold, f"fold_{n_fold}_"+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
         
         # validation folder
         val_fold = (n_fold + 1) % max_fold
@@ -219,7 +224,7 @@ if __name__== "__main__":
         train_data_loader = DataLoader(usd_train, 
                             shuffle=True,
                             batch_size=config["training"]["batch_size"],
-                            num_workers=torch.cuda.device_count() * 8,
+                            num_workers=torch.cuda.device_count() * 4,
                             prefetch_factor=4,
                             pin_memory=True
                             )
@@ -227,7 +232,7 @@ if __name__== "__main__":
         val_data_loader = DataLoader(usd_val, 
                             shuffle=True,
                             batch_size=config["training"]["batch_size_val"],
-                            num_workers=torch.cuda.device_count() * 8,
+                            num_workers=torch.cuda.device_count() * 4,
                             prefetch_factor=4,
                             pin_memory=True
                             )
@@ -265,7 +270,22 @@ if __name__== "__main__":
         else:
             optimizer =torch.optim.Adam(model.parameters(), lr=0.001, eps=1e-07, weight_decay=1e-3)
         
-        loss_train, loss_val, best_epoch = train(model, train_data_loader, val_data_loader, loss_fn, optimizer, n_epochs, device, checkpoint_folder_fold, writer, testing_mode)
+        loss_train, loss_val, best_epoch = train(model, 
+                                                config,
+                                                train_data_loader, 
+                                                val_data_loader, 
+                                                loss_fn, 
+                                                optimizer, 
+                                                n_epochs, 
+                                                device, 
+                                                checkpoint_folder_fold, 
+                                                writer, 
+                                                img_folder, 
+                                                patch_lenght_samples, 
+                                                sample_rate, 
+                                                config["feats"]["n_window"],
+                                                testing_mode
+                                                )
         
         loss_train_history.append(loss_train)
         loss_val_history.append(loss_val)
@@ -284,7 +304,8 @@ if __name__== "__main__":
         
         test_data_loader = DataLoader(usd_test, 
                             batch_size=config["testing"]["batch_size"],
-                            num_workers=torch.cuda.device_count() * 8,
+                            num_workers=torch.cuda.device_count() * 4,
+                            prefetch_factor=4,
                             pin_memory=True
                             )
         
@@ -301,10 +322,15 @@ if __name__== "__main__":
         
         # accuracy score for the testing folder
         target_labels, predicted_labels = inference(inference_model, 
-            test_data_loader, 
-            device, 
-            testing_mode
-            )
+                                            config, 
+                                            img_folder,
+                                            test_data_loader, 
+                                            device, 
+                                            patch_lenght_samples, 
+                                            sample_rate, 
+                                            config["feats"]["n_window"],
+                                            testing_mode
+                                        )
         
          # calculate accuracy
         accuracy = accuracy_score(target_labels, predicted_labels)

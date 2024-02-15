@@ -1,16 +1,46 @@
 from tqdm import tqdm
 import torch
+import torchaudio
 import os 
+from utils import get_transformations
 
 from utils import plot_figure, get_transformations, log_mels, take_patch_frames
+
+def process_audio_GPU(
+    inputs, 
+    config, 
+    device, 
+    patch_lenght, 
+    sample_rate, 
+    window_size
+):
+    
+    if config['processing'] == 'GPU':
+            # mel_spectogram
+            transformation = get_transformations(config).to(device)
+            inputs = transformation(inputs)
+        
+            inputs = log_mels(inputs, device)
+
+            inputs = (inputs - torch.mean(inputs))/torch.var(inputs)
+
+    start_frame, end_frame = take_patch_frames(patch_lenght, sample_rate, window_size)
+    inputs = inputs[:, :, :, start_frame:end_frame]
+    
+    return inputs
 
 
 def train_one_epoch(
         model, 
+        config,
         data_loader,
         loss_fn, 
         optimizer, 
-        device
+        device, 
+        patch_lenght, 
+        sample_rate, 
+        window_size,
+        img_folder
     ):
     
     num_batches = len(data_loader.dataset) / data_loader.batch_size
@@ -24,20 +54,12 @@ def train_one_epoch(
             
         inputs, targets = inputs.to(device), targets.to(device)
         
-        # mel_spectogram
-        # inputs = transformation(inputs)
-        # plot_figure(inputs[0].cpu().numpy().squeeze(), f'melspectogram_{i}')
+        inputs = process_audio_GPU(inputs, config, device, patch_lenght, sample_rate, window_size)
         
-        # # normalization of mel spectogram
-        # inputs = log_mels(inputs, device)
-        # inputs = (inputs - mean_train) / var_train
-        # #inputs = (inputs/torch.mean(inputs))/torch.var(inputs)
-
-        # # consider only three random second patch
-        # start_frame, end_frame = take_patch_frames(patch_lenght, sample_rate, window_size)
-        # inputs = inputs[:, :, :, start_frame:end_frame]
-        
-        plot_figure(inputs[0].cpu().numpy().squeeze(), f'network_input_{i}')
+        # plot the image ##
+        # label = targets[0].cpu().item()
+        # filename = os.path.join(img_folder, f'network_input_{i}_label_{label}_cpu')
+        # plot_figure(inputs[0].cpu().numpy().squeeze(), filename, label)
 
         # Zero your gradients for every batch!
         optimizer.zero_grad()
@@ -58,9 +80,14 @@ def train_one_epoch(
 
 def val_one_epoch(
         model, 
+        config,
         data_loader, 
         loss_fn, 
         device, 
+        patch_lenght, 
+        sample_rate, 
+        window_size, 
+        img_folder, 
         mode
     ):
     
@@ -78,14 +105,12 @@ def val_one_epoch(
                 targets = targets.ravel()
             
             inputs, targets = inputs.to(device), targets.to(device)
-            # inputs = transformation(inputs)
-            # inputs = log_mels(inputs, device)
-            # inputs = (inputs - mean_train) / var_train
-            
-            # #inputs = (inputs/torch.mean(inputs))/torch.var(inputs)
-            # start_frame, end_frame = take_patch_frames(patch_lenght, sample_rate, window_size)
-            # inputs = inputs[:, :, :, start_frame:end_frame]
-            #plot_figure(inputs[0].cpu().numpy().squeeze(), f'network_input_validation_{i}')
+        
+            inputs = process_audio_GPU(inputs, config, device, patch_lenght, sample_rate, window_size)
+            ## plot the image ##
+            # label = targets[0].cpu().item()
+            # filename = os.path.join(img_folder, f'network_input_{i}_label_{label}_validation_cpu')
+            # plot_figure(inputs[0].cpu().numpy().squeeze(), filename, label)
 
             # make prediction for this batch
             predictions = model(inputs)
@@ -97,6 +122,7 @@ def val_one_epoch(
     return running_loss / num_batches
 
 def train(model, 
+          config,
           train_data_loader, 
           val_data_loader,  
           loss_fn,
@@ -105,6 +131,10 @@ def train(model,
           device, 
           checkpoint_folder, 
           writer, 
+          img_folder,
+          patch_lenght, 
+          sample_rate, 
+          window_size,
           mode='a',
           early_stop_patience=100, 
           checkpoint_filename = "urban-sound-cnn.pth", 
@@ -117,10 +147,10 @@ def train(model,
         print(f"Epoch: {n_epoch+1}")
         
         # training epoch
-        train_loss = train_one_epoch(model, train_data_loader, loss_fn, optimizer, device)
+        train_loss = train_one_epoch(model, config, train_data_loader, loss_fn, optimizer, device, patch_lenght, sample_rate, window_size, img_folder)
         print(f"Train_loss: {train_loss:.2f}")
         
-        val_loss = val_one_epoch(model, val_data_loader, loss_fn, device, mode)
+        val_loss = val_one_epoch(model, config, val_data_loader, loss_fn, device, patch_lenght, sample_rate, window_size, img_folder, mode)
         print(f"Val_loss: {val_loss:.2f}")
         
         # adding training and validation loss to tensorboard writer

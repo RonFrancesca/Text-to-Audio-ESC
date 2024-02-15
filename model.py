@@ -1,56 +1,71 @@
-from torch import nn
-import torch.nn.functional as F
+import torch
 
 
-class CNNNetwork(nn.Module):
 
-    def __init__(self, config):
+class CNNNetwork(torch.nn.Module):
+
+    def __init__(self, config, dropout_rate=0.5,kernel_size=5,pool_size=(4,2),pool_stride=(4,2)):
         super().__init__()
 
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=24, kernel_size=3)
-        self.conv2 = nn.Conv2d(in_channels=24, out_channels=48, kernel_size=3)
-        self.conv3 = nn.Conv2d(in_channels=48, out_channels=48, kernel_size=3)
-        
-        self.flatten = nn.Flatten()
+        self.droupout_rate = dropout_rate
+        self.kernel_size = kernel_size
+        self.pool_size = pool_size
+        self.pool_stride = pool_stride
+
+        self.conv1 = torch.nn.Conv2d(in_channels=1, out_channels=24, kernel_size=self.kernel_size,padding='same')
+        self.conv2 = torch.nn.Conv2d(in_channels=24, out_channels=48, kernel_size=self.kernel_size,padding='same')
+        self.conv3 = torch.nn.Conv2d(in_channels=48, out_channels=48, kernel_size=self.kernel_size,padding='same')
+
+        self.activation1 = torch.nn.ReLU()
+        self.activation2 = torch.nn.ReLU()
+        self.activation3 = torch.nn.ReLU()
+        self.activation4 = torch.nn.ReLU()
+
+        self.pool1 = torch.nn.MaxPool2d(kernel_size=self.pool_size, stride=self.pool_stride)
+        self.pool2 = torch.nn.MaxPool2d(kernel_size=self.pool_size, stride=self.pool_stride)
+
+        self.flatten = torch.nn.Flatten()
 
         # to be removed afterwards
         if config["feats"]["n_mels"] == 128:
-            in_features_layer_1 = 1680
+            in_features_layer_1 = 3072#1680
         elif config["feats"]["n_mels"] == 64:
-            in_features_layer_1 = 336
+            in_features_layer_1 = 1536
             
-        self.fc1 = nn.Linear(in_features=in_features_layer_1, out_features=64)
-        self.fc2 = nn.Linear(in_features=64, out_features=10)
-        
+        self.fc1 = torch.nn.Linear(in_features=in_features_layer_1, out_features=64)
+        self.fc2 = torch.nn.Linear(in_features=64, out_features=10)
+
+        self.dr1 = torch.nn.Dropout(p=self.droupout_rate)
+        self.dr2 = torch.nn.Dropout(p=self.droupout_rate)
 
     def forward(self, x):
 
-         # cnn layer-1 - with 64 mel band (ks = 3) ! with 64 mel band (ks = 3)
-        x = self.conv1(x) #input size [2, 1, 64, 45] | [2, 1, 128, 45]
-        x = F.max_pool2d(x, kernel_size=(4,2), stride=(4,2)) #input size [2, 24, 62, 43] | [2, 1, 126, 45]
-        x = F.relu(x) #input size [2, 24, 15, 21] | [2, 24, 31, 21]
+        x = torch.permute(x, (0, 1, 3, 2)) # Luca: N.B. salamon applies 4X2 pooling over TXF axis, but specs are returned in FXT form, so the reshaping
+
+        # 
+        x = self.conv1(x) 
+        x = self.pool1(x) 
+        x = self.activation1(x) 
 
         # cnn layer-2
-        x = self.conv2(x) #input size [2, 24, 15, 20] | [2, 24, 31, 21]
-        x = F.max_pool2d(x, kernel_size=(4,2), stride=(4,2)) #input size [2, 48, 13, 19] | [2, 48, 29, 19]
-        x = F.relu(x)  # input size [2, 48, 3, 9] | [2, 48, 7, 9]
+        x = self.conv2(x) 
+        x = self.pool2(x)
+        x = self.activation2(x)  
 
         # cnn layer-3
-        x = self.conv3(x) #input size [2, 48, 3, 9] | [2, 48, 7, 9]
-        x = F.relu(x) # input size [2, 48, 1, 7] | [2, 48, 5, 7]
+        x = self.conv3(x) 
+        x = self.activation3(x) 
 
-        # # global average pooling 2D
-        # x = F.avg_pool2d(x, kernel_size=x.size()[2:])
-        # x = x.view(-1, 48)
-        x = self.flatten(x)  # input size [2, 48, 1, 7] | [2, 48, 5, 7]
+    
+        x = self.flatten(x)  
 
         # dense layer-1
-        x = self.fc1(x) # [2, 336] | [2, 1680]
-        x = F.dropout(x, p=0.5) # [2, 64] | [2, 64]
-        x = F.relu(x) # [2, 64] | [2, 64]
-    
+        x = self.dr1(x)
+        x = self.fc1(x)  
+        x = self.activation4(x)  
+
         # dense output layer
-        x = self.fc2(x) # [2, 64] | [2, 64]
-        logits = F.dropout(x, p=0.5) # [2, 10] | [2, 10]
-        
+        x = self.dr2(x) # N.B. salamon applies dropout before last layer
+        logits = self.fc2(x)  
+
         return logits

@@ -67,12 +67,14 @@ class UrbanSoundDataset(Dataset):
                  std, 
                  patch_lenght_samples,
                  device, 
-                 origin='real'
+                 origin='real', 
+                 processing='CPU',
                  ):
         
         
         self.annotations = annotations
         self.origin = origin
+        self.processing = processing
         
         if self.origin == 'real':
             # original dataset
@@ -99,20 +101,39 @@ class UrbanSoundDataset(Dataset):
 
     def __getitem__(self, index):
         
-        signal = process_audio(self.paths_list[index], self.target_sample_rate, self.num_samples)
-                
-        # log-mel spectogram
-        signal = self.transformation(signal)
-        signal = log_mels(signal, self.device)
-        if self.mean == None and self.std == None:
-            signal = (signal - torch.mean(signal))/torch.var(signal)
+        
+        
+        #signal = self.paths_list[index]
+        if self.processing == 'GPU':
+            
+            signal = process_audio(self.paths_list[index], self.target_sample_rate, self.num_samples)
+        
         else:
-            signal = (signal - self.mean) / self.std
-        
+            spec_file_path = self.paths_list[index].replace('.wav', '.npy')
+            
+            if not os.path.exists(spec_file_path):
+                signal = process_audio(self.paths_list[index], self.target_sample_rate, self.num_samples)
                 
-        start_frame, end_frame = take_patch_frames(self.patch_lenght_samples, self.target_sample_rate, self.window_size)
-        signal = signal[:, :, start_frame:end_frame]
+                # log-mel spectogram
+                signal = self.transformation(signal)
+                signal = log_mels(signal, self.device)
+            
+                # normalization spectogram by spectogram
+                if self.mean == None and self.std == None:
+                    signal = (signal - torch.mean(signal))/torch.var(signal)
+                else:
+                    signal = (signal - self.mean) / self.std
+                
+                np.save(spec_file_path, signal.numpy())
+            else:
+                signal = np.load(spec_file_path)
+                signal = torch.from_numpy(signal)
+                
+                
+            #start_frame, end_frame = take_patch_frames(self.patch_lenght_samples, self.target_sample_rate, self.window_size)
+            #signal = signal[:, :, start_frame:end_frame]
         
+        # get back the labels
         if self.origin == 'real':
             label = self.annotations.iloc[index, 6]
         else:

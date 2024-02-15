@@ -22,19 +22,17 @@ def get_classes():
     
     return classes_list
 
-def plot_figure(data, filename):
+def plot_figure(data, filename, label):
     # Plot Mel Spectrogram
 
     plt.figure(figsize=(12, 8))  
     # take the first audio of each frame
     plt.imshow(data, cmap='viridis', aspect='auto', origin='lower')
     plt.colorbar()
-    plt.title('Mel Spectrogram')
+    plt.title('Mel Spectrogram - label')
     plt.xlabel('Time')
     plt.ylabel('Mel Frequency')
-    plot_folder = './img/both_dataset'
-    os.makedirs(plot_folder, exist_ok=True)
-    plt.savefig(os.path.join(plot_folder, filename))
+    plt.savefig(filename)
     plt.close()
     
 def save_confusion_matrix(y_true, y_pred, classes, filename):
@@ -101,7 +99,7 @@ def log_mels(mels, device):
     computation_method = 'luca' #luca
     if computation_method=='luca':
         log_offset=0.001 # Avoids NaNs
-        log_output = torch.log(mels +log_offset) 
+        log_output = torch.log(mels + log_offset) 
     elif computation_method == 'fra':
         amp_to_db = AmplitudeToDB(stype="amplitude").to(device)
         amp_to_db.amin = 1e-5 
