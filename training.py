@@ -136,7 +136,7 @@ def train(model,
           sample_rate, 
           window_size,
           mode='a',
-          early_stop_patience=100, 
+          early_stop_patience=15, 
           checkpoint_filename = "urban-sound-cnn.pth", 
     ):
     
