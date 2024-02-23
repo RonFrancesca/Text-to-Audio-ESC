@@ -106,6 +106,8 @@ if __name__== "__main__":
     # definition of classes
     classes = get_classes()
     
+    mel_bands = config["feats"]["n_mels"]
+    
     for n_fold in range(1, max_fold):
         
         print(f"Testing folder: {n_fold}")
@@ -124,22 +126,47 @@ if __name__== "__main__":
         
         print(f"Validation folder: {val_fold}")
 
-        # training data: all the files from any folder but the testing and validation folder
+        # training data: all the files from any folder but the testing and validation folde
         if config["concat_data"] == 0:
-            # training from urban sound dataset - only original dataset
+            # training from urban sound dataset 
             train_data_real = annotations_real[~annotations_real['fold'].isin([n_fold, val_fold])]
             if config["fast_run"] == 1:
                 train_data_real = train_data_real[:100]
             train_data_real.reset_index(drop=True, inplace=True)
             
-            # it should not be important until we don't normalize the entire dataset
-            #train_data_path = train_data.apply(lambda row: os.path.join(config["data"]["audio_dir_real"], f"fold{row[5]}", row[0]), axis=1)
-            
             # validation from urban sound
             val_data_real = annotations_real[annotations_real['fold'] == val_fold]
             val_data_real.reset_index(drop=True, inplace=True)
+            
+            if config["data_aug"] == "T":
+                # get the TS metadata based on mel band 
+                
+                annotations_aug = pd.read_csv(config["data"]["metadata_file_real"].replace('UrbanSound8K.csv', f'UrbanSound8K_TS_{mel_bands}.csv'))
+                train_data_aug = annotations_aug[~annotations_aug['fold'].isin([n_fold, val_fold])]
+                if config["fast_run"] == 1:
+                    train_data_aug = train_data_aug[:100]
+                train_data_aug.reset_index(drop=True, inplace=True)
+                
+                # validation from urban sound
+                val_data_aug = annotations_aug[annotations_aug['fold'] == val_fold]
+                val_data_aug.reset_index(drop=True, inplace=True)
+            
+            elif config["data_aug"] == "P":
+                # get the PS metadata based on mel band
+                annotations_aug = pd.read_csv(config["data"]["metadata_file_real"].replace('UrbanSound8K.csv', f'UrbanSound8K_PS_{mel_bands}.csv'))
+                train_data_aug = annotations_aug[~annotations_aug['fold'].isin([n_fold, val_fold])]
+                if config["fast_run"] == 1:
+                    train_data_aug = train_data_aug[:100]
+                train_data_aug.reset_index(drop=True, inplace=True)
+                
+                # validation from urban sound
+                val_data_aug = annotations_aug[annotations_aug['fold'] == val_fold]
+                val_data_aug.reset_index(drop=True, inplace=True)
+            else:
+                print(f"No data augmentation will be applied")
+                
         
-        elif config["concat_data"]:
+        elif config["concat_data"] == 1:
             # get all the data from the folders different than the testing and validation folder, from the generated dataset
             
             # training fake
@@ -160,8 +187,18 @@ if __name__== "__main__":
             val_data_real = annotations_real[annotations_real['fold'] == val_fold]
             val_data_real.reset_index(drop=True, inplace=True)
         
+        elif config["concat_data"] == -1:
+            # using only fake data
+            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], n_fold, val_fold)
+            if config["fast_run"] == 1:
+                train_data_fake = train_data_fake[:100]
+           
+            # validation fake
+            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], val_fold)
+            
         else:
-            print("Dataset not suppported yet")
+            print("You set the wrong values for the dataset that need to used at training!")
+            
         
         # dataset normalization 
         if config["data"]["normalization"] == 'dataset':
@@ -192,15 +229,23 @@ if __name__== "__main__":
             print(f"Normalization not defined")
         
         # collecting dataset
-        if config['concat_data']:
+        if config['concat_data'] == 1:
             # I use both original and fake data to train my model
             usd_train_real =  UrbanSoundDataset(config, train_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
             usd_train_fake =  UrbanSoundDataset(config, train_data_fake, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='fake')
             usd_train = torch.utils.data.ConcatDataset([usd_train_real, usd_train_fake])
-        else:
+        elif config['concat_data'] == 0:
             # I only use original data to train my model
             usd_train =  UrbanSoundDataset(config, train_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
         
+            if config["data_aug"] == "P" or config["data_aug"] == "T":
+                usd_train_aug = UrbanSoundDataset(config, train_data_aug, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='aug')
+                usd_train = torch.utils.data.ConcatDataset([usd_train, usd_train_aug])
+        
+        elif config['concat_data'] == -1:
+            usd_train =  UrbanSoundDataset(config, train_data_fake, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='fake')
+        else:
+            print("You set the wrong values for the concatenation of the dataset")
         
         testing_mode = config["testing"]["mode"]
         if testing_mode == 'f':
@@ -208,14 +253,25 @@ if __name__== "__main__":
             usd_val = UrbanSoundDatasetValTest(config, val_data, num_samples, mean_train, std_train, patch_lenght_samples, device)
         elif testing_mode == 'a':
             # testing considering the whole clip. 
-            if config['concat_data']:
+            if config['concat_data'] == 1:
                 # I use both original and fake data to validate my model
                 usd_val_real =  UrbanSoundDataset(config, val_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
                 usd_val_fake =  UrbanSoundDataset(config, val_data_fake, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='fake')
                 usd_val = torch.utils.data.ConcatDataset([usd_val_real, usd_val_fake])
-            else:
+            
+            elif config['concat_data'] == 0:
                 # I only use original date to validate my model
                 usd_val =  UrbanSoundDataset(config, val_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
+            
+                if config["data_aug"] == "P" or config["data_aug"] == "T":
+                    usd_val_aug = UrbanSoundDataset(config, val_data_aug, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='aug')
+                    usd_val = torch.utils.data.ConcatDataset([usd_val, usd_val_aug])
+                
+            
+            elif config['concat_data'] == -1:
+                usd_val =  UrbanSoundDataset(config, val_data_fake, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='fake')
+            else:
+                print(f"You set the wrng value for the generation of the dataset")
         else:
             # need to add to throw the error
             print(f"Option not available")

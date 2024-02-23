@@ -1,13 +1,13 @@
-fast_run: 1
-processing: 'GPU'
-#audio_used: 'both' # gen or original (according to if the audio used for training the network is original or generated)
-gpu: "3"
+fast_run: 0
+processing: 'CPU'
+gpu: "2"
 allow_growth: "True"
 base_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class"
-log_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/log_dir"
-session_id: "test"
-model: Cnn # Net or Cnn, according to the model that we want to initilize
-concat_data: 0 # if contact data is flagged, then I am using both dataset, otherwise just the reale one
+log_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/logdir"
+session_id: "data_aug_P_64"
+model: Cnn # Cnn for Salamon network, Net for the network from jupyter notebook
+concat_data: 0 # 0 for only real data or real+aug, 1 for concatentaion of data, -1 for only fake data
+data_aug: P # T for TimeStretch, P for PitchShift 
 training:
   batch_size: 128
   batch_size_val: 64
@@ -20,9 +20,9 @@ data: # change with your paths if different.
   # NOTE: if you have data in 44kHz only then synth_folder will be the path where
   # resampled data will be placed.
   metadata_file_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
-  metadata_file_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_dataset"
+  metadata_file_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_dataset1_200"
   audio_dir_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
-  audio_dir_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_dataset"
+  audio_dir_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_dataset1_200"
   img: "/nas/home/fronchini/EUSIPCO/urban-sound-class/img"
   checkpoint_folder: "./checkpoint"
   audio_max_len: 4

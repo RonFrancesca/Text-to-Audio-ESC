@@ -31,13 +31,8 @@ def pad_to(signal, num_samples):
         # plt.plot(signal[0].detach().numpy())
         # plt.savefig(os.path.join("img", f"signal_padded_{index}.png"))
         # plt.show()
-        
     
-    return signal   
-        # FRA (used to be like this)
-        #signal = torch.nn.functional.pad(signal, last_dim_padding)
-    
-    #return signal
+    return signal  
     
     
 def process_audio(audio_sample_path, target_sample_rate, num_samples):
@@ -74,21 +69,25 @@ class UrbanSoundDataset(Dataset):
         
         self.annotations = annotations
         self.origin = origin
-        self.processing = processing
+        self.processing = config["processing"]
         
         if self.origin == 'real':
             # original dataset
             self.audio_dir = config["data"]["audio_dir_real"]
             self.paths_list = self.annotations.apply(lambda row: os.path.join(self.audio_dir, f"fold{row[5]}", row[0]), axis=1)
-        else:
+        elif self.origin == 'fake':
             # generated dataset
             self.audio_dir = config["data"]["audio_dir_fake"]
+            self.paths_list = list(annotations['slice_file_name'])
+        elif self.origin == 'aug':
+            self.audio_dir = config["data"]["audio_dir_real"]
             self.paths_list = list(annotations['slice_file_name'])
         
         self.target_sample_rate = config["feats"]["sample_rate"]
         self.num_samples = num_samples
         self.mean = mean
         self.std = std
+        self.mel_bands = config['feats']['n_mels']
         self.transformation = get_transformations(config)
         self.device = device
         self.patch_lenght_samples = patch_lenght_samples
@@ -101,40 +100,41 @@ class UrbanSoundDataset(Dataset):
 
     def __getitem__(self, index):
         
+        # audio 
         
-        
-        #signal = self.paths_list[index]
         if self.processing == 'GPU':
-            
             signal = process_audio(self.paths_list[index], self.target_sample_rate, self.num_samples)
-        
         else:
-            spec_file_path = self.paths_list[index].replace('.wav', '.npy')
             
+            if self.origin == 'real' or self.origin == 'fake':
+                if self.mel_bands == 64:
+                    spec_file_path = self.paths_list[index].replace('.wav', '.npy')
+                else:
+                    spec_file_path = self.paths_list[index].replace('.wav', '_128.npy')
+            else:
+                spec_file_path = self.paths_list[index]
+                
             if not os.path.exists(spec_file_path):
                 signal = process_audio(self.paths_list[index], self.target_sample_rate, self.num_samples)
-                
+                    
                 # log-mel spectogram
                 signal = self.transformation(signal)
                 signal = log_mels(signal, self.device)
-            
+                
                 # normalization spectogram by spectogram
                 if self.mean == None and self.std == None:
                     signal = (signal - torch.mean(signal))/torch.var(signal)
                 else:
                     signal = (signal - self.mean) / self.std
-                
+                    
                 np.save(spec_file_path, signal.numpy())
             else:
                 signal = np.load(spec_file_path)
                 signal = torch.from_numpy(signal)
-                
-                
-            #start_frame, end_frame = take_patch_frames(self.patch_lenght_samples, self.target_sample_rate, self.window_size)
-            #signal = signal[:, :, start_frame:end_frame]
+            
         
-        # get back the labels
-        if self.origin == 'real':
+        # label 
+        if self.origin == 'real' or self.origin == 'aug':
             label = self.annotations.iloc[index, 6]
         else:
             label = self.annotations.iloc[index, 2]
