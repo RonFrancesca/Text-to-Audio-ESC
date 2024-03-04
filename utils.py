@@ -138,6 +138,7 @@ def get_transformations(config):
 
 def collect_generated_metadata(
     metadata_fold, 
+    single_or_not,
     test_fold, 
     val_fold):
     
@@ -145,11 +146,18 @@ def collect_generated_metadata(
     audio_gen_df = pd.DataFrame(columns=['slice_file_name', 'class', 'classid'])
     
     fold_folders = [folder for folder in os.listdir(metadata_fold) if folder.startswith('fold_') and int(folder.split('_')[1]) not in [test_fold, val_fold]]
+    if single_or_not == 1:
+        csv_ext = '.csv'
+    elif single_or_not == 4:
+        csv_ext = '_x4.csv'
+    else:
+        print(f"Not implemented")
+    
 
     # Iterate through each fold folder
     for fold_folder in fold_folders:
         # Get the path to the CSV file in the current fold folder
-        csv_file_path = glob.glob(os.path.join(metadata_fold, fold_folder, '*.csv'))
+        csv_file_path = glob.glob(os.path.join(metadata_fold, fold_folder, f'{fold_folder}{csv_ext}'))
         
         # Check if a CSV file exists in the folder
         if csv_file_path:
@@ -161,14 +169,22 @@ def collect_generated_metadata(
     
     return audio_gen_df
 
-def collect_val_generated_metadata(metadata_fold, val_fold):
+def collect_val_generated_metadata(metadata_fold, single_or_not, val_fold):
     
     audio_gen_df = pd.DataFrame(columns=['slice_file_name', 'class', 'classid'])
     
     fold_folders = [folder for folder in os.listdir(metadata_fold) if folder.startswith('fold_') and int(folder.split('_')[1]) in [val_fold]]
 
+    if single_or_not == 1:
+        csv_ext = '.csv'
+    elif single_or_not == 4:
+        csv_ext = '_x4.csv'
+    else:
+        print(f"Not implemented")
+
+
     # should be only one folder
-    csv_file_path = glob.glob(os.path.join(metadata_fold, fold_folders[0], '*.csv'))
+    csv_file_path = glob.glob(os.path.join(metadata_fold, fold_folders[0], f'{fold_folders[0]}{csv_ext}'))
         
     # Check if a CSV file exists in the folder
     if csv_file_path:

@@ -13,8 +13,8 @@ from torchsummary import summary
 from sklearn.metrics import accuracy_score
 
 import log
-from model_notebook import Net
 from model import CNNNetwork
+from CRNN_baseline import CRNNBaseline
 from urban_sound_dataset import UrbanSoundDataset, UrbanSoundDatasetValTest, UrbanSoundDataset_generated
 from training import train
 from inference import inference
@@ -94,7 +94,7 @@ if __name__== "__main__":
     
     # folder for cross validation
     if config['fast_run']:
-        max_fold = annotations_real["fold"].min() + 1
+        max_fold = annotations_real["fold"].min() + 3
     else:
         max_fold = annotations_real["fold"].max() + 1
     
@@ -102,11 +102,17 @@ if __name__== "__main__":
     accuracy_history = []
     loss_train_history = []
     loss_val_history = []
+    target_labels_all = []
+    predicted_labels_all = []
     
     # definition of classes
     classes = get_classes()
     
     mel_bands = config["feats"]["n_mels"]
+    
+    PS_1 = [-2, -1, 1, 2]
+    PS_2 = [-3.5, -2.5, 2.5, 3.5]
+    TS_1 = [0.81, 0.93, 1.07, 1.23]
     
     for n_fold in range(1, max_fold):
         
@@ -153,7 +159,7 @@ if __name__== "__main__":
             
             elif config["data_aug"] == "P":
                 # get the PS metadata based on mel band
-                annotations_aug = pd.read_csv(config["data"]["metadata_file_real"].replace('UrbanSound8K.csv', f'UrbanSound8K_PS_{mel_bands}.csv'))
+                annotations_aug = pd.read_csv(config["data"]["metadata_file_real"].replace('UrbanSound8K.csv', f'UrbanSound8K_PS2_{mel_bands}.csv'))
                 train_data_aug = annotations_aug[~annotations_aug['fold'].isin([n_fold, val_fold])]
                 if config["fast_run"] == 1:
                     train_data_aug = train_data_aug[:100]
@@ -162,15 +168,51 @@ if __name__== "__main__":
                 # validation from urban sound
                 val_data_aug = annotations_aug[annotations_aug['fold'] == val_fold]
                 val_data_aug.reset_index(drop=True, inplace=True)
+            
+            elif config["data_aug"] in ["P1_all", "P2_all", "T1_all"]:
+                
+                if config["data_aug"] == 'P1_all':
+                    da_list = PS_1
+                    da_type = 'P'
+                elif config["data_aug"] == 'P2_all':
+                    da_list = PS_2
+                    da_type = 'P'
+                elif config["data_aug"] == 'T1_all':
+                    da_list = TS_1
+                    da_type = 'T'
+                else:
+                    print(f"Not implemented yet")
+                
+                # Create two empty dataframe for training and for validation
+                train_data_aug = pd.DataFrame(columns=['slice_file_name', 'fsID', 'start', 'end', 'salience', 'fold', 'classID', 'class'])
+                val_data_aug = pd.DataFrame(columns=['slice_file_name', 'fsID', 'start', 'end', 'salience', 'fold', 'classID', 'class'])
+                
+                for da_value in da_list:
+                    annotations_aug = pd.read_csv(config["data"]["metadata_file_real"].replace('UrbanSound8K.csv', f'UrbanSound8K_{da_type}S_{mel_bands}_{da_value}.csv'))
+                    train_data_tmp = annotations_aug[~annotations_aug['fold'].isin([n_fold, val_fold])]
+                
+                    if config["fast_run"] == 1:
+                        train_data_tmp = train_data_tmp[:100]
+                    
+                    train_data_tmp.reset_index(drop=True, inplace=True)
+                    
+                    # concat the dataset
+                    train_data_aug = pd.concat([train_data_aug, train_data_tmp], ignore_index=True)
+                    
+                    # validation from urban sound
+                    val_data_tmp = annotations_aug[annotations_aug['fold'] == val_fold]
+                    val_data_tmp.reset_index(drop=True, inplace=True)
+                    
+                    # concat the dataset
+                    val_data_aug = pd.concat([val_data_aug, val_data_tmp], ignore_index=True)
             else:
                 print(f"No data augmentation will be applied")
                 
-        
         elif config["concat_data"] == 1:
             # get all the data from the folders different than the testing and validation folder, from the generated dataset
             
             # training fake
-            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], n_fold, val_fold)
+            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], config["1_or_4"], n_fold, val_fold)
             if config["fast_run"] == 1:
                 train_data_fake = train_data_fake[:100]
             
@@ -181,7 +223,7 @@ if __name__== "__main__":
             train_data_real.reset_index(drop=True, inplace=True)
            
             # validation fake
-            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], val_fold)
+            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], config["1_or_4"], val_fold)
                         
             # validation real
             val_data_real = annotations_real[annotations_real['fold'] == val_fold]
@@ -189,12 +231,12 @@ if __name__== "__main__":
         
         elif config["concat_data"] == -1:
             # using only fake data
-            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], n_fold, val_fold)
+            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], config["1_or_4"], n_fold, val_fold)
             if config["fast_run"] == 1:
                 train_data_fake = train_data_fake[:100]
            
             # validation fake
-            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], val_fold)
+            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], config["1_or_4"], val_fold)
             
         else:
             print("You set the wrong values for the dataset that need to used at training!")
@@ -238,7 +280,7 @@ if __name__== "__main__":
             # I only use original data to train my model
             usd_train =  UrbanSoundDataset(config, train_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
         
-            if config["data_aug"] == "P" or config["data_aug"] == "T":
+            if config["data_aug"] in ['P', 'T', 'P1_all', 'P2_all', 'T1_all']:
                 usd_train_aug = UrbanSoundDataset(config, train_data_aug, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='aug')
                 usd_train = torch.utils.data.ConcatDataset([usd_train, usd_train_aug])
         
@@ -263,7 +305,7 @@ if __name__== "__main__":
                 # I only use original date to validate my model
                 usd_val =  UrbanSoundDataset(config, val_data_real, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='real')
             
-                if config["data_aug"] == "P" or config["data_aug"] == "T":
+                if config["data_aug"] in ['P', 'T', 'P1_all', 'P2_all', 'T1_all']:
                     usd_val_aug = UrbanSoundDataset(config, val_data_aug, num_samples, mean_train, std_train, patch_lenght_samples, device, origin='aug')
                     usd_val = torch.utils.data.ConcatDataset([usd_val, usd_val_aug])
                 
@@ -297,11 +339,15 @@ if __name__== "__main__":
         ###########
         ## train ##
         ###########
-        
-        if config["model"] == 'Cnn':
+        run = config['run'] 
+        if config["model"] == 'CNN':
             model = CNNNetwork(config)
+            checkpoint_file_name = f"urban-sound-cnn_{run}.pth"
+        elif config["model"] == 'CRNN':
+            model = CRNNBaseline(config)
+            checkpoint_file_name = f"urban-sound-crnn_{run}.pth"
         else:
-            model = Net()
+            print("None model selected")
         model = model.to(device)
         
         # print the summary of the folder, only for the first iteartion in the loop
@@ -340,7 +386,8 @@ if __name__== "__main__":
                                                 patch_lenght_samples, 
                                                 sample_rate, 
                                                 config["feats"]["n_window"],
-                                                testing_mode
+                                                testing_mode, 
+                                                checkpoint_filename = checkpoint_file_name
                                                 )
         
         loss_train_history.append(loss_train)
@@ -366,12 +413,17 @@ if __name__== "__main__":
                             )
         
         # load the model
-        if config['model'] == 'Cnn':
+        if config['model'] == 'CNN':
             inference_model = CNNNetwork(config)
+            checkpoint_file_name = f"urban-sound-cnn_{run}.pth"
+        elif config['model'] == 'CRNN':
+            inference_model = CRNNBaseline(config)
+            checkpoint_file_name = f"urban-sound-crnn_{run}.pth"
         else:
-            inference_model = Net()
+            print("None model selected")
         
-        state_dict = torch.load(os.path.join(checkpoint_folder_fold, "urban-sound-cnn.pth")) 
+        
+        state_dict = torch.load(os.path.join(checkpoint_folder_fold, checkpoint_file_name)) 
         inference_model.load_state_dict(state_dict)
         inference_model = inference_model.to(device)        
         inference_model.eval()
@@ -390,7 +442,9 @@ if __name__== "__main__":
         
          # calculate accuracy
         accuracy = accuracy_score(target_labels, predicted_labels)
-        confusion_matrix_filename = os.path.join(log_fold, f"fold_{n_fold}_cmx.png")
+        
+        # save confusion matrix per file
+        confusion_matrix_filename = os.path.join(log_fold, f"fold_{n_fold}_{run}_cmx.png")
         save_confusion_matrix(target_labels, predicted_labels, classes, confusion_matrix_filename)
         print(f"Accuracy score for folder: {n_fold}: {accuracy * 100:.2f}%")
         
@@ -400,7 +454,7 @@ if __name__== "__main__":
 
         # Specify the file path
         session_id = config["session_id"]
-        accuracy_file_path = os.path.join(accuracy_folder, f"accuracy_{session_id}.txt")
+        accuracy_file_path = os.path.join(accuracy_folder, f"{session_id}.txt")
 
         # Check if the file exists
         if os.path.exists(accuracy_file_path):
@@ -415,7 +469,14 @@ if __name__== "__main__":
                 file.write(sentence + "\n")
         
         accuracy_history.append(accuracy)
+        target_labels_all.extend(target_labels)
+        predicted_labels_all.extend(predicted_labels)
 
+    # save total and final confusion matrix
+    
+    confusion_matrix_filename_final = os.path.join(log_fold, f"confusion_matrix_final_{run}.png")
+    save_confusion_matrix(target_labels_all, predicted_labels_all, classes, confusion_matrix_filename_final)
+    
     print(f"Loss_train_final: {np.mean(loss_train_history):.2f}")
     print(f"Loss_validation_final: {np.mean(loss_val_history):.2f}")
     print(f"Accuracy: {np.mean(accuracy_history) * 100:.2f}%")
