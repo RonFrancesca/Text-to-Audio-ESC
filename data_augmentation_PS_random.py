@@ -132,39 +132,39 @@ if __name__== "__main__":
         ##
         
         # selecting a random values for the picth shift
-        #pitch_shift_selected = random.choice(pitch_shift_values)
+        pitch_shift_selected = random.choice(pitch_shift_values)
         #print(f"Random values selected for the picth shift: {pitch_shift_selected}")
-        for pitch_shift_selected in pitch_shift_values[:1]:
         
-            file_audio_PS_path = paths_list[index].replace('.wav', f'_PS_{pitch_shift_selected}_{mel_bands}.npy')
+        
+        file_audio_PS_path = paths_list[index].replace('.wav', f'_PS_{pitch_shift_selected}_{mel_bands}.npy')
             
-            if not os.path.exists(file_audio_PS_path):
+        if not os.path.exists(file_audio_PS_path):
             
-                # https://pytorch.org/audio/stable/generated/torchaudio.transforms.PitchShift.html#torchaudio.transforms.PitchShift
-                # using the same values of the mel spectogram for the pitch shift
-                pitch_shift = PitchShift(sample_rate=target_sample_rate, n_steps=pitch_shift_selected)
-                signal_pitch_shifthed = pitch_shift(signal)
+            # https://pytorch.org/audio/stable/generated/torchaudio.transforms.PitchShift.html#torchaudio.transforms.PitchShift
+            # using the same values of the mel spectogram for the pitch shift
+            pitch_shift = PitchShift(sample_rate=target_sample_rate, n_steps=pitch_shift_selected)
+            signal_pitch_shifthed = pitch_shift(signal)
                 
-                # save the file to listen to it 
-                #file_PS_signal = os.path.join(test_folder, f'file_{index}_PS_{pitch_shift_selected}_{mel_bands}.wav')
-                #torchaudio.save(file_PS_signal, signal_pitch_shifthed, target_sample_rate)
+            # save the file to listen to it 
+            #file_PS_signal = os.path.join(test_folder, f'file_{index}_PS_{pitch_shift_selected}_{mel_bands}.wav')
+            #torchaudio.save(file_PS_signal, signal_pitch_shifthed, target_sample_rate)
                 
-                # log-mel spectogram applied to the picth shifted signal
-                signal_pitch_shifthed = mel_spectogram(signal_pitch_shifthed)
-                signal_pitch_shifthed = log_mels(signal_pitch_shifthed, 'GPU')
+            # log-mel spectogram applied to the picth shifted signal
+            signal_pitch_shifthed = mel_spectogram(signal_pitch_shifthed)
+            signal_pitch_shifthed = log_mels(signal_pitch_shifthed, 'GPU')
                 
                 # plot figure
                 #plot_file_path = os.path.join(test_folder, f'file_{index}_PS_{pitch_shift_selected}_{mel_bands}.png')
                 #plot_figure(signal_pitch_shifthed[0].detach().numpy(), plot_file_path)
                 
-                # the file will need to be saved as npy file
-                np.save(file_audio_PS_path, signal_pitch_shifthed.detach().numpy())
+            # the file will need to be saved as npy file
+            np.save(file_audio_PS_path, signal_pitch_shifthed.detach().numpy())
             
-            index_file = paths_list[index].split('/')[-1]        
-            annotations_augmented.loc[annotations_augmented['slice_file_name'] == index_file, 'slice_file_name'] = file_audio_PS_path
+        index_file = paths_list[index].split('/')[-1]        
+        annotations_augmented.loc[annotations_augmented['slice_file_name'] == index_file, 'slice_file_name'] = file_audio_PS_path
     
     # save the metadata
-    augmented_PS_annotations = f"/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K_PS_{mel_bands}_{ps}.csv"
+    augmented_PS_annotations = f"/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K_PS2_{mel_bands}.csv"
     annotations_augmented.to_csv(augmented_PS_annotations, index=False)
         
             

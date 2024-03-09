@@ -130,6 +130,12 @@ class UrbanSoundDataset(Dataset):
                 np.save(spec_file_path, signal.numpy())
             else:
                 signal = np.load(spec_file_path)
+                # adding this because I have forgot to pad the data that I needed to pad before
+                # was throwing an errore for the T1_all augmentation technique
+                nsample = int((self.target_sample_rate * 4) / self.window_size) + 1
+                if signal.shape[2] > nsample:
+                    signal = signal[:, :, :nsample]
+                
                 signal = torch.from_numpy(signal)
             
         

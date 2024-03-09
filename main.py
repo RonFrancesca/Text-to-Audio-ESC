@@ -212,7 +212,7 @@ if __name__== "__main__":
             # get all the data from the folders different than the testing and validation folder, from the generated dataset
             
             # training fake
-            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], config["1_or_4"], n_fold, val_fold)
+            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], config["n_rep"], n_fold, val_fold)
             if config["fast_run"] == 1:
                 train_data_fake = train_data_fake[:100]
             
@@ -223,7 +223,7 @@ if __name__== "__main__":
             train_data_real.reset_index(drop=True, inplace=True)
            
             # validation fake
-            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], config["1_or_4"], val_fold)
+            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], config["n_rep"], val_fold)
                         
             # validation real
             val_data_real = annotations_real[annotations_real['fold'] == val_fold]
@@ -231,12 +231,12 @@ if __name__== "__main__":
         
         elif config["concat_data"] == -1:
             # using only fake data
-            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], config["1_or_4"], n_fold, val_fold)
+            train_data_fake = collect_generated_metadata(config["data"]["metadata_file_fake"], config["n_rep"], n_fold, val_fold)
             if config["fast_run"] == 1:
                 train_data_fake = train_data_fake[:100]
            
             # validation fake
-            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], config["1_or_4"], val_fold)
+            val_data_fake = collect_val_generated_metadata(config["data"]["metadata_file_fake"], config["n_rep"], val_fold)
             
         else:
             print("You set the wrong values for the dataset that need to used at training!")
