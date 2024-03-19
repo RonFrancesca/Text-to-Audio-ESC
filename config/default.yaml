@@ -8,18 +8,18 @@
 # data augmentation
 # name of files 
 # mel bands
-fast_run: 1
+fast_run: 0
 processing: 'CPU'
-gpu: "0"
+gpu: "1"
 allow_growth: "True"
 base_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class"
 log_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/logdir"
-session_id: "test"
+session_id: "audiogen3_cnn_1"
 run: 1
-model: CNN # Cnn for Salamon network, CRNN for Cobos network
-concat_data: 0 # 0 for only real data or real+aug, 1 for concatentaion of data, -1 for only fake data
-1_or_4: 4 # 1 if only single dataset, 4 if the dataset * 4
-data_aug: T1_all # T for TimeStretch, P for PitchShift, None if not data augmentation applied, P1_all, P2_all T1_all if I want to ge them all
+model: CNN # Cnn for Salamon netwok, CRNN for Cobos network
+concat_data: -1 # 0 for only real data or real+aug, 1 for concatentaion of data, -1 for only fake data
+n_rep: 3 # number of repetition of the dataset [1, 2, 3, 4]
+data_aug: None # T for TimeStretch, P for PitchShift, None if not data augmentation applied, P1_all, P2_all T1_all if I want to ge them all
 training:
   batch_size: 128
   batch_size_val: 64
@@ -32,9 +32,9 @@ data: # change with your paths if different.
   # NOTE: if you have data in 44kHz only then synth_folder will be the path where
   # resampled data will be placed.
   metadata_file_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
-  metadata_file_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_gpt"
+  metadata_file_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOGEN_dataset"
   audio_dir_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
-  audio_dir_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOLDM2_gpt"
+  audio_dir_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOGEN_dataset"
   img: "/nas/home/fronchini/EUSIPCO/urban-sound-class/img"
   checkpoint_folder: "./checkpoint"
   audio_max_len: 4
