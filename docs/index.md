@@ -288,7 +288,166 @@ USK8 example:
 
 
 ### 6) engine_idling
+USK8 example: 
+<audio src="audio/US8K/engine_idling/102857-5-0-24.wav" controls preload style="width: 150px;"></audio>
+
+<div class="container">
+   <div class="column-1">
+     <h6>AudioGen</h6>
+     <audio src="audio/AudioGen/engine_idling/109.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <h6>AudioGen<sub>gpt</sub></h6>
+     <audio src="audio/AudioGen_gpt/engine_idling/283.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2/engine_idling/126.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2_gpt/engine_idling/256.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/engine_idling/317.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/engine_idling/481.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/engine_idling/177.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/engine_idling/489.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/engine_idling/508.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/engine_idling/630.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/engine_idling/48.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/engine_idling/765.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
 ### 7) gun_shot
+
+USK8 example: 
+<audio src="audio/US8K/gun_shot/145611-6-0-0.wav" controls preload style="width: 150px;"></audio>
+
+<div class="container">
+   <div class="column-1">
+     <h6>AudioGen</h6>
+     <audio src="audio/AudioGen/gun_shot/210.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <h6>AudioGen<sub>gpt</sub></h6>
+     <audio src="audio/AudioGen_gpt/gun_shot/107.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2/gun_shot/171.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2_gpt/gun_shot/356.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/gun_shot/24.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/gun_shot/486.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/gun_shot/348.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/gun_shot/592.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/gun_shot/360.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/gun_shot/718.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/gun_shot/519.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/gun_shot/779.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
 ### 8) jackhammer
+
+USK8 example: 
+<audio src="audio/US8K/jackhammer/125678-7-0-3.wav" controls preload style="width: 150px;"></audio>
+
+<div class="container">
+   <div class="column-1">
+     <h6>AudioGen</h6>
+     <audio src="audio/AudioGen/jackhammer/256.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <h6>AudioGen<sub>gpt</sub></h6>
+     <audio src="audio/AudioGen_gpt/jackhammer/203.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2/jackhammer/100.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2_gpt/jackhammer/271.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/jackhammer/454.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/jackhammer/373.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/jackhammer/162.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/jackhammer/483.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/jackhammer/694.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/jackhammer/515.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/jackhammer/230.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/jackhammer/729" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+
 ### 9) siren
 ### 10) street_music
