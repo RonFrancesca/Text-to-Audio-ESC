@@ -13,26 +13,26 @@ In the past few years, text-to-audio models have emerged as a significant advanc
 Here we present audio data generated using AudioLDM2, MusicGen via simple prompt and via ChatGPT prompts, namely AudioLDM2<sub>gpt</sub> and MusicGen<sub>gpt</sub>. We present results for each of the 10 classes contained in the [UrbanSound8K (US8K)](https://urbansounddataset.weebly.com/urbansound8k.html) dataset: air_conditioner, car_horn, children_playing, dog_bark, drilling, engine_drilling, gun_shot, jackhammer, siren, street_music. For each class, we present three examples per each model.
 
 ### air_conditioner
+
+USK8 example: 
+<audio src="audio/example0/sga.wav" controls preload style="width: 150px;"></audio>
+
 <div class="container">
    <div class="column-1">
      <h6>AudioGen</h6>
-     <audio src="audio/AudioGen/air_cond/109.wav" controls preload style="width: 150px;"></audio>
+     <audio src="audio/AudioGen/air_cond/109.wav" controls preload style="width: 200px;"></audio>
    </div>
    <div class="column-2">
      <h6>AudioLDM2</h6>
-     <audio src="audio/example0/dpai.wav" controls preload style="width: 150px;"></audio>
+     <audio src="audio/example0/dpai.wav" controls preload style="width: 200px;"></audio>
    </div>
    <div class="column-3">
      <h6>AudioGen<sub>gpt</sub></h6>
-     <audio src="audio/example0/caw.wav" controls preload style="width: 150px;"></audio>
+     <audio src="audio/example0/caw.wav" controls preload style="width: 200px;"></audio>
    </div>
    <div class="column-4">
      <h6>AudioGen<sub>gpt</sub></h6>
-     <audio src="audio/example0/sga.wav" controls preload style="width: 150px;"></audio>
-   </div>
-     <div class="column-5">
-     <h6>US8K</h6>
-     <audio src="audio/example0/sga.wav" controls preload style="width: 150px;"></audio>
+     <audio src="audio/example0/sga.wav" controls preload style="width: 200px;"></audio>
    </div>
 </div>
 
