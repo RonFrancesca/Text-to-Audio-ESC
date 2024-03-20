@@ -12,7 +12,7 @@ In the past few years, text-to-audio models have emerged as a significant advanc
 
 Here we present audio data generated using AudioLDM2, MusicGen via simple prompt and via ChatGPT prompts, namely AudioLDM2<sub>gpt</sub> and MusicGen<sub>gpt</sub>. We present results for each of the 10 classes contained in the [UrbanSound8K (US8K)](https://urbansounddataset.weebly.com/urbansound8k.html) dataset: air_conditioner, car_horn, children_playing, dog_bark, drilling, engine_drilling, gun_shot, jackhammer, siren, street_music. For each class, we present three examples per each model.
 
-### air_conditioner
+### 1) air_conditioner
 
 USK8 example: 
 <audio src="audio/US8K/air_cond/100852-0-0-13.wav" controls preload style="width: 150px;"></audio>
@@ -23,15 +23,15 @@ USK8 example:
      <audio src="audio/AudioGen/air_cond/109.wav" controls preload style="width: 200px;"></audio>
    </div>
    <div class="column-2">
-     <h6>AudioLDM2</h6>
+     <h6>AudioGen<sub>gpt</sub></h6>
      <audio src="audio/AudioGen_gpt/air_cond/175.wav" controls preload style="width: 200px;"></audio>
    </div>
    <div class="column-3">
-     <h6>AudioGen<sub>gpt</sub></h6>
+     <h6>AudioLDM2</h6>
      <audio src="audio/AudioLDM2/air_cond/143.wav" controls preload style="width: 200px;"></audio>
    </div>
    <div class="column-4">
-     <h6>AudioGen<sub>gpt</sub></h6>
+     <h6>AudioLDM2<sub>gpt</sub></h6>
      <audio src="audio/AudioLDM2_gpt/air_cond/125.wav" controls preload style="width: 200px;"></audio>
    </div>
 </div>
@@ -67,12 +67,65 @@ USK8 example:
 </div>
 
 
-### car_horn
-### children_playing
-### dog_bark
-### drilling
-### engine_drilling
-### gun_shot
-### jackhammer
-### siren
-### street_music
+### 2) car_horn
+
+USK8 example: 
+<audio src="audio/US8K/car_horn/100648-1-0-0.wav" controls preload style="width: 150px;"></audio>
+
+<div class="container">
+   <div class="column-1">
+     <h6>AudioGen</h6>
+     <audio src="audio/AudioGen/car_horn/1152.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <h6>AudioGen<sub>gpt</sub></h6>
+     <audio src="audio/AudioGen_gpt/car_horn/138.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2/car_horn/13.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2_gpt/car_horn/176.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/car_horn/501.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/car_horn/195.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/car_horn/47.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/car_horn/292.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/car_horn/856.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/car_horn/62.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/car_horn/89.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/car_horn/444.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+### 3) children_playing
+### 4) dog_bark
+### 5) drilling
+### 6) engine_drilling
+### 7) gun_shot
+### 8) jackhammer
+### 9) siren
+### 10) street_music
