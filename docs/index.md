@@ -16,23 +16,23 @@ Here we present audio data generated using AudioLDM2, MusicGen via simple prompt
 <div class="container">
    <div class="column-1">
      <h6>AudioGen</h6>
-     <audio src="audio/example0/audio_original_masked.wav" controls preload style="width: 190px;"></audio>
+     <audio src="audio/example0/audio_original_masked.wav" controls preload style="width: 150px;"></audio>
    </div>
    <div class="column-2">
      <h6>AudioLDM2</h6>
-     <audio src="audio/example0/dpai.wav" controls preload style="width: 200px;"></audio>
+     <audio src="audio/example0/dpai.wav" controls preload style="width: 150px;"></audio>
    </div>
    <div class="column-3">
      <h6>AudioGen<sub>gpt</sub></h6>
-     <audio src="audio/example0/caw.wav" controls preload style="width: 200px;"></audio>
+     <audio src="audio/example0/caw.wav" controls preload style="width: 150px;"></audio>
    </div>
    <div class="column-4">
      <h6>AudioGen<sub>gpt</sub></h6>
-     <audio src="audio/example0/sga.wav" controls preload style="width: 200px;"></audio>
+     <audio src="audio/example0/sga.wav" controls preload style="width: 150px;"></audio>
    </div>
      <div class="column-5">
      <h6>US8K</h6>
-     <audio src="audio/example0/sga.wav" controls preload style="width: 200px;"></audio>
+     <audio src="audio/example0/sga.wav" controls preload style="width: 150px;"></audio>
    </div>
 </div>
 
