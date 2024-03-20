@@ -450,4 +450,109 @@ USK8 example:
 
 
 ### 9) siren
+
+USK8 example: 
+<audio src="audio/US8K/siren/105289-8-0-1.wav" controls preload style="width: 150px;"></audio>
+
+<div class="container">
+   <div class="column-1">
+     <h6>AudioGen</h6>
+     <audio src="audio/AudioGen/siren/148.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <h6>AudioGen<sub>gpt</sub></h6>
+     <audio src="audio/AudioGen_gpt/siren/306.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2/siren/175.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2_gpt/siren/1028.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/siren/454.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/siren/450.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/siren/311.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/siren/379.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/siren/694.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/siren/545.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/siren/443.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/siren/667.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
 ### 10) street_music
+
+USK8 example: 
+<audio src="audio/US8K/street_music/14527-9-0-6.wav" controls preload style="width: 150px;"></audio>
+
+<div class="container">
+   <div class="column-1">
+     <h6>AudioGen</h6>
+     <audio src="audio/AudioGen/street_music/187.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <h6>AudioGen<sub>gpt</sub></h6>
+     <audio src="audio/AudioGen_gpt/street_music/194.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2/street_music/308.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2_gpt/street_music/506.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/street_music/287.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/street_music/305.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/street_music/468.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/street_music/767.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/street_music/409.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/street_music/378.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/street_music/675.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/street_music/982.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
