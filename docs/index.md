@@ -122,7 +122,61 @@ USK8 example:
 </div>
 
 ### 3) children_playing
+
 ### 4) dog_bark
+
+USK8 example: 
+<audio src="audio/US8K/dog_bark/100032-3-0-0.wav" controls preload style="width: 150px;"></audio>
+
+<div class="container">
+   <div class="column-1">
+     <h6>AudioGen</h6>
+     <audio src="audio/AudioGen/dog_bark/137.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <h6>AudioGen<sub>gpt</sub></h6>
+     <audio src="audio/AudioGen_gpt/dog_bark/117.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2/dog_bark/204.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <h6>AudioLDM2<sub>gpt</sub></h6>
+     <audio src="audio/AudioLDM2_gpt/dog_bark/313.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/dog_bark/277.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/dog_bark/180.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/dog_bark/378.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/dog_bark/515.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/dog_bark/382.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/dog_bark/30.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/dog_bark/590.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/dog_bark/670.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
 ### 5) drilling
 ### 6) engine_drilling
 ### 7) gun_shot
