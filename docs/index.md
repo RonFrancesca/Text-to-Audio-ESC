@@ -1,6 +1,6 @@
 ---
 layout: default
-title:  Synthesizing Soundscapes: Leveraging Text-to-Audio Models for Environmental Sound Classification
+title:  "Synthesizing Soundscapes: Leveraging Text-to-Audio Models for Environmental Sound Classification"
 ---
 
 ## Abstract
