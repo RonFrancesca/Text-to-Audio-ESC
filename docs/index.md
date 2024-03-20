@@ -15,7 +15,7 @@ Here we present audio data generated using AudioLDM2, MusicGen via simple prompt
 ### air_conditioner
 
 USK8 example: 
-<audio src="audio/example0/sga.wav" controls preload style="width: 150px;"></audio>
+<audio src="audio/US8K/air_cond/100852-0-0-13.wav" controls preload style="width: 150px;"></audio>
 
 <div class="container">
    <div class="column-1">
@@ -24,15 +24,45 @@ USK8 example:
    </div>
    <div class="column-2">
      <h6>AudioLDM2</h6>
-     <audio src="audio/example0/dpai.wav" controls preload style="width: 200px;"></audio>
+     <audio src="audio/AudioGen_gpt/air_cond/175.wav" controls preload style="width: 200px;"></audio>
    </div>
    <div class="column-3">
      <h6>AudioGen<sub>gpt</sub></h6>
-     <audio src="audio/example0/caw.wav" controls preload style="width: 200px;"></audio>
+     <audio src="audio/AudioLDM2/air_cond/143.wav" controls preload style="width: 200px;"></audio>
    </div>
    <div class="column-4">
      <h6>AudioGen<sub>gpt</sub></h6>
-     <audio src="audio/example0/sga.wav" controls preload style="width: 200px;"></audio>
+     <audio src="audio/AudioLDM2_gpt/air_cond/125.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/air_cond/217.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/air_cond/238.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/air_cond/243.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/air_cond/291.wav" controls preload style="width: 200px;"></audio>
+   </div>
+</div>
+
+<div class="container">
+   <div class="column-1">
+     <audio src="audio/AudioGen/air_cond/53.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-2">
+     <audio src="audio/AudioGen_gpt/air_cond/353.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-3">
+     <audio src="audio/AudioLDM2/air_cond/343.wav" controls preload style="width: 200px;"></audio>
+   </div>
+   <div class="column-4">
+     <audio src="audio/AudioLDM2_gpt/air_cond/404.wav" controls preload style="width: 200px;"></audio>
    </div>
 </div>
 
