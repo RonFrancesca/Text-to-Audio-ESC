@@ -16,7 +16,7 @@ Here we present audio data generated using AudioLDM2, MusicGen via simple prompt
 <div class="container">
    <div class="column-1">
      <h6>AudioGen</h6>
-     <audio src="audio/example0/audio_original_masked.wav" controls preload style="width: 150px;"></audio>
+     <audio src="audio/AudioGen/air_cond/109.wav" controls preload style="width: 150px;"></audio>
    </div>
    <div class="column-2">
      <h6>AudioLDM2</h6>
