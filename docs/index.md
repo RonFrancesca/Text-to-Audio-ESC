@@ -10,9 +10,12 @@ In the past few years, text-to-audio models have emerged as a significant advanc
 
 ## Audio Examples
 
-Here we present audio data generated using AudioLDM2, MusicGen via simple prompt and via ChatGPT prompts, namely AudioLDM2<sub>gpt</sub> and MusicGen<sub>gpt</sub>. We present results for each of the 10 classes contained in the [UrbanSound8K (US8K)](https://urbansounddataset.weebly.com/urbansound8k.html) dataset: air_conditioner, car_horn, children_playing, dog_bark, drilling, engine_idling, gun_shot, jackhammer, siren, street_music. For each class, we present three examples per each model.
+In this page, we present audio data generated using AudioLDM2 and MusicGen via simple prompt and via ChatGPT prompts  (namely AudioLDM2<sub>gpt</sub> and MusicGen<sub>gpt</sub>). We present results for each of the 10 classes contained in the [UrbanSound8K (US8K)](https://urbansounddataset.weebly.com/urbansound8k.html) dataset: <i>air_conditioner, car_horn, children_playing, dog_bark, drilling, engine_idling, gun_shot, jackhammer, siren, street_music</i>. For each class, we present three examples per each model.
 
 ### 1) air_conditioner
+
+Simple prompt: "A clear sound of an air conditiner in a urban context" <br> 
+ChatGPT prompt: "Generate a realistic audio representation of the sound of an air conditioner in a urban environment"
 
 USK8 example: 
 <audio src="audio/US8K/air_cond/100852-0-0-13.wav" controls preload style="width: 150px;"></audio>
@@ -69,6 +72,9 @@ USK8 example:
 
 ### 2) car_horn
 
+Simple prompt: "A clear sound of an car horning in a urban context" <br> 
+ChatGPT prompt: "Generate a realistic audio representation of the sound of an car horning in a urban environment"
+
 USK8 example: 
 <audio src="audio/US8K/car_horn/100648-1-0-0.wav" controls preload style="width: 150px;"></audio>
 
@@ -123,6 +129,9 @@ USK8 example:
 
 ### 3) children_playing
 
+Simple prompt: "A clear sound of a children playing between them in a urban context" <br> 
+ChatGPT prompt: "Generate a realistic audio representation of the sound of children playing between them in a urban environment"
+
 USK8 example: 
 <audio src="audio/US8K/kid_playing/100263-2-0-117.wav" controls preload style="width: 150px;"></audio>
 
@@ -176,9 +185,10 @@ USK8 example:
 </div>
 
 
-
-
 ### 4) dog_bark
+
+Simple prompt: "A clear sound of a dog barking in a urban context" <br> 
+ChatGPT prompt: "Generate a realistic audio representation of the sound of a dog barking in a urban environment"
 
 USK8 example: 
 <audio src="audio/US8K/dog_bark/100032-3-0-0.wav" controls preload style="width: 150px;"></audio>
@@ -234,6 +244,9 @@ USK8 example:
 
 ### 5) drilling
 
+Simple prompt: "A clear sound of a drilling in a urban context" <br> 
+ChatGPT prompt: "Generate a realistic audio representation of the sound of a drilling in a urban environment"
+
 USK8 example: 
 <audio src="audio/US8K/drilling/104625-4-0-3.wav" controls preload style="width: 150px;"></audio>
 
@@ -288,6 +301,10 @@ USK8 example:
 
 
 ### 6) engine_idling
+
+Simple prompt: "A clear sound of an engine idling in a urban context" <br> 
+ChatGPT prompt: "Generate a realistic audio representation of the sound of an engine idling in a urban environment"
+
 USK8 example: 
 <audio src="audio/US8K/engine_idling/102857-5-0-24.wav" controls preload style="width: 150px;"></audio>
 
@@ -341,6 +358,9 @@ USK8 example:
 </div>
 
 ### 7) gun_shot
+
+Simple prompt: "A clear sound of a gun shot in a urban context" <br> 
+ChatGPT prompt: "Generate a realistic audio representation of the sound of a gun shot in a urban environment"
 
 USK8 example: 
 <audio src="audio/US8K/gun_shot/145611-6-0-0.wav" controls preload style="width: 150px;"></audio>
@@ -396,6 +416,9 @@ USK8 example:
 
 ### 8) jackhammer
 
+Simple prompt: "A clear sound of a jackhammer in a urban context" <br> 
+ChatGPT prompt: "Generate a realistic audio representation of the sound of a jackhammer in a urban environment"
+
 USK8 example: 
 <audio src="audio/US8K/jackhammer/125678-7-0-3.wav" controls preload style="width: 150px;"></audio>
 
@@ -450,6 +473,9 @@ USK8 example:
 
 
 ### 9) siren
+
+Simple prompt: "A clear sound of a siren coming from an emergency vehicle in a urban context" <br> 
+ChatGPT prompt: "Generate a realistic audio representation of the sound of a siren coming from an emergency vehicle in a urban environment"
 
 USK8 example: 
 <audio src="audio/US8K/siren/105289-8-0-1.wav" controls preload style="width: 150px;"></audio>
