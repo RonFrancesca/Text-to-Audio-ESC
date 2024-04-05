@@ -1,44 +1,61 @@
-todo:
+<div align="center">
 
-understad why the network is not working: 
-- normalization: how do ohter people do
-
-
-Notice: 
-- the shuffle in the dataset split is only for make it run. It will need to be modified or handle in a diferent way for the validation or for a real run
-Important:
-- now there is only the normalization spec by spec. It will need to be modified afterwards if also the other normalization need to tested
-
-# 
-1. Data augmentation: implementare le tecniche di Salamon nel paper oltre questa come data augmentation e le varie combinazioni (PS, TS, Mixup, GaussianNoise)
-2. Dataset da soli e dataset concatenati
-3. 100, 200, 300 dati generati etc.
-4. Rete 1, Rete 2 e Rete3: baseline, dcase 
-5. Aumentando il dataset, possiamo avere delle reti più piccole?
-
-Things to do:
-- code need to be cleaned and the project need to be better written
-- create a single file for the inference process
-- try with different networks
-- DCASE baseline to try: https://github.com/marmoi/dcase2022_task1_baseline
-- ResNet: reti piu piccole per performance migliori? Possiamo avere con un dataset migliore delle reti piu piccoli?
-- set the patience into the default parrameters
-- how the concatenation between csbv files and dataset is handled need to be changed 
-- fine-tuning of parameters 
-- need to find a way to do not copy and paste all the data but directly cpy and paste the X runs of of the model
-- find a way to add the information related to the energy consumption of the models
-- main need to be a function that i will call so that everything will be better
-- change how the data augmentation need to be saved. In the way it is now, I need to manually change the number of the value of the data augmentation otherwise it won't save the values correctly on the CVS file. 
-The other way around, loop first trought the values and then tworught the files is the best way. 
-it could also simply create a single csv file to get all of them
+# Synthesizing Soundscapes: Leveraging Text-to-Audio Models for Environmental Sound Classification
 
 
-Experiments to do:
-- change the parameters regularization for the CVNN as done on the paper
+<!-- <img width="700px" src="docs/new-generic-style-transfer-headline.svg"> -->
+ 
+[Francesca Ronchini](https://www.linkedin.com/in/francesca-ronchini/)<sup>1</sup>, [Luca Comanducci](https://lucacoma.github.io/)<sup>1</sup>, and [Fabio Antonacci](https://www.deib.polimi.it/ita/personale/dettagli/573870)<sup>1</sup>
 
-Future works:
-- different networks
-- fine tune the models with the sounds we want
+<sup>1</sup> Dipartimento di Elettronica, Informazione e Bioingegneria - Politecnico di Milano<br>
+    
+[![arXiv](https://img.shields.io/badge/arXiv-2403.17864-b31b1b.svg)](https://arxiv.org/abs/2403.17864)
+
+</div>
 
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Abstract](#abstract)
+- [Install & Usage](#install--usage)
+- [Additional information](#additional-information)
+- [Link to additional material](#ink-to-additional-material)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+    
+## Abstract
+
+In the past few years, text-to-audio models have emerged as a significant advancement in automatic audio generation. Although they represent impressive technological progress, the effectiveness of their use in the development of audio applications remains uncertain. This paper aims to investigate these aspects, specifically focusing on the task of classification of environmental sounds. This study analyzes the performance of two different environmental classification systems when data generated from text-to-audio models is used for training. Two cases are considered: a) when the training dataset is augmented by data coming from two different text-to-audio models; and b) when the training dataset consists solely of synthetic audio generated. In both cases, the performance of the classification task is tested on real data. Results indicate that text-to-audio models are effective for dataset augmentation, whereas the performance of the models drops when relying on only generated audio.
+
+
+## Install & Usage
+
+Information will be added soon..
+
+
+
+## Link to additional material
+
+Information will be added soon..
+
+
+
+## Additional information
+
+For more details:
+"[Synthesizing Soundscapes: Leveraging Text-to-Audio Models for Environmental Sound Classification](https://arxiv.org/abs/2403.17864)", [Francesca Ronchini](https://www.linkedin.com/in/francesca-ronchini/), [Luca Comanducci](https://lucacoma.github.io/), and [Fabio Antonacci](https://www.deib.polimi.it/ita/personale/dettagli/573870) - arXiv, 2024. 
+
+
+If you use code or comments from this work, please cite our paper:
+
+```BibTex
+@article{ronchini2024synthesizing,
+  title={Synthesizing Soundscapes: Leveraging Text-to-Audio Models for Environmental Sound Classification},
+  author={Ronchini, Francesca and Comanducci, Luca and Antonacci, Fabio},
+  journal={arXiv preprint arXiv:2403.17864},
+  year={2024}
+}
+```
 
