@@ -14,8 +14,8 @@ In this page, we present audio data generated using AudioLDM2 and MusicGen via s
 
 ### 1) air_conditioner
 
-- Simple prompt: "A clear sound of an air conditiner in a urban context." <br> 
-- ChatGPT prompt: "Generate a realistic audio representation of the sound of an air conditioner in a urban environment."
+- <b>Simple prompt</b>: "A clear sound of an air conditiner in a urban context." <br> 
+- <b>ChatGPT prompt</b>: "Generate a realistic audio representation of the sound of an air conditioner in a urban environment."
 
 USK8 example: 
 <audio src="audio/US8K/air_cond/100852-0-0-13.wav" controls preload style="width: 150px;"></audio>
