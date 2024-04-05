@@ -20,8 +20,8 @@
 
 - [Abstract](#abstract)
 - [Install & Usage](#install--usage)
-- [Additional information](#additional-information)
 - [Link to additional material](#ink-to-additional-material)
+- [Additional information](#additional-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
     
