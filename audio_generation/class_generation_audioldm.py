@@ -12,7 +12,7 @@ from diffusers import AudioLDMPipeline, AudioLDM2Pipeline
 audio_folder = <Insert path to folder output>
 os.makedirs(audio_folder, exist_ok=True)
 
-# equivaent of audioldm2-full
+# equivalent of audioldm2-full
 model = "audioldm2"
 repo_id = f"cvssp/{model}"
 
@@ -42,7 +42,6 @@ classes_fold = [
     "gun_shot",
 ]
 
-#print(f"Total number of files to generate: {sum(classes.values())}")
 
 # following tips from: https://huggingface.co/docs/diffusers/main/en/api/pipelines/audioldm2#tips
 

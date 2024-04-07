@@ -11,12 +11,6 @@ from audiocraft.models import AudioGen
 from audiocraft.data.audio import audio_write
 
 
-# easy prompt
-# try with negative prompts
-# try with differenr seed (how to change the seed?) -> generator
-# try with other examples from
-# create the sound folder
-
 audio_folder = <insert path to output folder>
 os.makedirs(audio_folder, exist_ok=True)
 
@@ -52,8 +46,6 @@ classes_fold = [
 
 print(f"Total number of files to generate: {sum(classes.values())}")
 
-# following tips from: https://huggingface.co/docs/diffusers/main/en/api/pipelines/audioldm2#tips
-
 
 duration = 4
 model_name = 'facebook/audiogen-medium'
@@ -70,7 +62,7 @@ model.set_generation_params(duration=duration)  # generate 4 seconds.
 class_folder_path = os.path.join(audio_folder, classes_fold[id])
 os.makedirs(class_folder_path, exist_ok=True)
 
-#for sound in enumerate(range(classes[class_sound])):
+
 for sound in range(n_file):
         
     audio = model.generate(prompt)  # generates 1 samples.
