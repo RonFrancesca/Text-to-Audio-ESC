@@ -20,7 +20,7 @@
 
 - [Abstract](#abstract)
 - [Install & Usage](#install--usage)
-- [Link to additional material](#ink-to-additional-material)
+- [Link to additional material](#link-to-additional-material)
 - [Additional information](#additional-information)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -61,7 +61,7 @@ cd audio_generation
 python class_generation_audiogen.py
 ```
 
-## Run the code
+### Run the code
 When all the data have been generated, you can reproduce the experiments. 
 
 First, install all the packages required by the system. Run the following command on your terminal to install all the packages needed:
@@ -70,7 +70,7 @@ First, install all the packages required by the system. Run the following comman
 pip install -r requirements.txt
 ```
 
-When all packages have been installed, you need to specify which dataset to use following the instruction on the <i>config/default.yaml</i> file. 
+When all packages have been installed, you need to specify which dataset to use following the instructions on the <i>config/default.yaml</i> file. 
 
 After all the parameters have been defined, you can run the code with the following command:
 
