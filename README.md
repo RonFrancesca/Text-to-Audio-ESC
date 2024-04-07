@@ -36,10 +36,10 @@ For generating the data, we used AudioLDM2 and AudioGen.
 
 ### Intalling AudioLDM2
 
-Please refer to the [AudioLDM2 GitHub repo](https://github.com/haoheliu/AudioLDM2?tab=readme-ov-file#hugging-face--diffusers) and follow the installaction instruction. For this study, we used the official checkpoints available in the Hugging Face 🧨 Diffusers and the <i>audioldm</i> checkpoint. 
+Please refer to the [AudioLDM2 GitHub repo](https://github.com/haoheliu/AudioLDM2?tab=readme-ov-file#hugging-face--diffusers) and follow the installation instructions. For this study, we used the official checkpoints available in the Hugging Face 🧨 Diffusers and the <i>audioldm</i> checkpoint. 
 
 When AudioLDM2 has been installed, you can generate the audio files running the script audio_generation/class_generation_audioldm.py
-Before running the script, you need to specifiy the path to the ouput folder, the audio class to generate, the prompt to use to generate the files, and the number of files to generate in the audio_generation/class_generation_audiogen.py
+Before running the script, you need to specify the path to the output folder, the audio class to generate, the prompt to use to generate the files, and the number of files to generate in the audio_generation/class_generation_audiogen.py
 
 After that, you can run the script with the command: 
 
@@ -52,10 +52,10 @@ python class_generation_audioldm.py
 
 ### Intalling AudioGen
 
-Please refer to the [AudioGen GitHubb repo](https://github.com/facebookresearch/audiocraft/blob/main/docs/AUDIOGEN.md#installation) and follow the installation instruction. 
+Please refer to the [AudioGen GitHub repo](https://github.com/facebookresearch/audiocraft/blob/main/docs/AUDIOGEN.md#installation) and follow the installation instructions. 
 
 When AudioGen has been installed, you can generate the audio files running the script audio_generation/class_generation_audiogen.py
-Before running the script, you need to specifiy the path to the ouput folder, the audio class to generate, the prompt to use to generate the files, and the number of files to generate in the audio_generation/class_generation_audiogen.py
+Before running the script, you need to specify the path to the output folder, the audio class to generate, the prompt to use to generate the files, and the number of files to generate in the audio_generation/class_generation_audiogen.py
 
 ```
 cd audio_generation
