@@ -38,8 +38,8 @@ For generating the data, we used AudioLDM2 and AudioGen.
 
 Please refer to the [AudioLDM2 GitHub repo](https://github.com/haoheliu/AudioLDM2?tab=readme-ov-file#hugging-face--diffusers) and follow the installation instructions. For this study, we used the official checkpoints available in the Hugging Face 🧨 Diffusers and the <i>audioldm</i> checkpoint. 
 
-When AudioLDM2 has been installed, you can generate the audio files running the script audio_generation/class_generation_audioldm.py
-Before running the script, you need to specify the path to the output folder, the audio class to generate, the prompt to use to generate the files, and the number of files to generate in the audio_generation/class_generation_audiogen.py
+When AudioLDM2 has been installed, you can generate the audio files running the script <i>audio_generation/class_generation_audioldm.py</i>
+Before running the script, you need to specify the path to the output folder, the audio class to generate, the prompt to use to generate the files, and the number of files to generate in the <i>audio_generation/class_generation_audiogen.py</i>.
 
 After that, you can run the script with the command: 
 
@@ -49,13 +49,12 @@ python class_generation_audioldm.py
 ```
 
 
-
 ### Intalling AudioGen
 
 Please refer to the [AudioGen GitHub repo](https://github.com/facebookresearch/audiocraft/blob/main/docs/AUDIOGEN.md#installation) and follow the installation instructions. 
 
-When AudioGen has been installed, you can generate the audio files running the script audio_generation/class_generation_audiogen.py
-Before running the script, you need to specify the path to the output folder, the audio class to generate, the prompt to use to generate the files, and the number of files to generate in the audio_generation/class_generation_audiogen.py
+When AudioGen has been installed, you can generate the audio files running the script <i>audio_generation/class_generation_audiogen.py</i>.
+Before running the script, you need to specify the path to the output folder, the audio class to generate, the prompt to use to generate the files, and the number of files to generate in the <i>audio_generation/class_generation_audiogen.py</i>. 
 
 ```
 cd audio_generation
@@ -63,17 +62,25 @@ python class_generation_audiogen.py
 ```
 
 ## Run the code
+When all the data have been generated, you can reproduce the experiments. 
 
+First, install all the packages required by the system. Run the following command on your terminal to install all the packages needed:
 
+```
+pip install -r requirements.txt
+```
 
+When all packages have been installed, you need to specify which dataset to use following the instruction on the <i>config/default.yaml</i> file. 
 
+After all the parameters have been defined, you can run the code with the following command:
 
-
+```
+python main.py
+```
 
 ## Link to additional material
 
-Information will be added soon..
-
+Additional material and audio samples are available on the [companion website](https://ronfrancesca.github.io/Text-to-Audio-ESC/). 
 
 
 ## Additional information
