@@ -1,55 +1,45 @@
-# Before every training check:
-# gpu
-# session_id = <selected_name>_<model_used>_<number_of_run>, example: us_cnn_1 or us_crnn_1 (us_model_run)
-# selected name should report the name of the dataset used so to remember them
-# model
-# run
-# concatenation of data
-# data augmentation
-# name of files 
-# mel bands
-fast_run: 0
+fast_run: 1
 processing: 'CPU'
-gpu: "1"
+gpu: "5"
 allow_growth: "True"
+
 base_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class"
 log_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/logdir"
-session_id: "audiogen3_cnn_1"
+session_id: "test_PS2_all"
+
+metadata_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
+metadata_gen: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOGEN_gpt"
+audio_dir_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
+
 run: 1
 model: CNN # Cnn for Salamon netwok, CRNN for Cobos network
-concat_data: -1 # 0 for only real data or real+aug, 1 for concatentaion of data, -1 for only fake data
-n_rep: 3 # number of repetition of the dataset [1, 2, 3, 4]
-data_aug: None # T for TimeStretch, P for PitchShift, None if not data augmentation applied, P1_all, P2_all T1_all if I want to ge them all
-training:
-  batch_size: 128
-  batch_size_val: 64
-  n_epochs: 100 # max num epochs
-  val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
-testing:
-  batch_size: 1
-  mode: a # [a or f] for the entire dataset (all clip) and f is for frame by frame at validation and testing time
-data: # change with your paths if different.
-  # NOTE: if you have data in 44kHz only then synth_folder will be the path where
-  # resampled data will be placed.
-  metadata_file_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
-  metadata_file_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOGEN_dataset"
-  audio_dir_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
-  audio_dir_fake: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOGEN_dataset"
-  img: "/nas/home/fronchini/EUSIPCO/urban-sound-class/img"
-  checkpoint_folder: "./checkpoint"
-  audio_max_len: 4
-  patch_lenght_s: 3
-  normalization: "spec" # [spec or dataset], spec when normalization spec by spec, dataset when normalizing considering the whole dataset
+data_type: 'generated' # [original, generated, both]
+n_rep: 1 # number of repetition of the dataset [1, 2, 3, 4]
+data_aug: null # possible values in line with the paper considered from Salamon [null, TS, PS1, PS2, PS1_all, PS2_all TS_all]
+
+normalization: "spec" # [spec or dataset], spec when normalization spec by spec, dataset when normalizing considering the whole dataset
+
+batch_size: 128
+batch_size_val: 64
+n_epochs: 100 # max num epochs
+val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
+
+batch_size_test: 1
+testing_mode: 'clip' # [clip or frame] 
+
 opt:
   lr: 0.001
-feats:
-  n_mels: 64
-  n_filters: 2048
-  hop_length: 1024
-  n_window: 1024
-  sample_rate: 16000
-  f_min: 0
-  f_max: 8000
+
+n_mels: 64
+n_filters: 2048
+hop_length: 512 
+n_window: 1024
+sr: 16000
+f_min: 0
+f_max: 8000
+audio_s: 4
+patch_s: 3
+
 net:
   kernel_size: 5
   stride: 1
