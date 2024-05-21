@@ -29,6 +29,7 @@ from utils import (
     collect_val_generated_metadata,
     get_classes,
     make_folder,
+    save_accuracies_to_csv, 
 )
 
 from training_data_processing import (
@@ -114,13 +115,16 @@ if __name__ == "__main__":
     else:
         max_fold = annotations_real["fold"].max() + 1
 
-    # initiate the list for the metricc: accuracy, loss train and loss validation
-    accuracy_history = []
-    loss_train_history = []
-    loss_val_history = []
-    target_labels_all = []
-    predicted_labels_all = []
-
+    # dictionary for metrics
+    
+    metrics_dic = {
+        'accuracy': [],
+        'loss_train': [],
+        'loss_val': [],
+        'target_labels_all': [],
+        'predicted_labels_all': [],
+        
+    }
 
     for n_fold in range(1, max_fold):
 
@@ -145,7 +149,7 @@ if __name__ == "__main__":
             metadata_real, 
             metadata_gen,
             features.fast_run, 
-            n_rep=1, 
+            n_rep=config['n_rep'], 
         )
         
         # take only the original and base dataset
@@ -335,8 +339,8 @@ if __name__ == "__main__":
             checkpoint_filename=checkpoint_file_name,
         )
 
-        loss_train_history.append(loss_train)
-        loss_val_history.append(loss_val)
+        metrics_dic['loss_train'].append(loss_train)
+        metrics_dic['loss_val'].append(loss_val)
 
         ###############
         ## inference ##
@@ -345,18 +349,6 @@ if __name__ == "__main__":
         test_data = annotations_real[annotations_real["fold"] == n_fold]
         test_data.reset_index(drop=True, inplace=True)
 
-        # if testing_mode == "f":
-        #     usd_test = UrbanSoundDatasetValTest(
-        #         config,
-        #         test_data,
-        #         num_samples,
-        #         mean_train,
-        #         std_train,
-        #         patch_samples,
-        #         device,
-        #     )
-        # elif testing_mode == "a":
-        
         usd_test = UrbanSoundDataset(
             config,
             test_data,
@@ -385,6 +377,7 @@ if __name__ == "__main__":
         state_dict = torch.load(
             os.path.join(checkpoint_folder_path, checkpoint_file_name)
         )
+        
         inference_model.load_state_dict(state_dict)
         inference_model = inference_model.to(device)
         inference_model.eval()
@@ -412,46 +405,29 @@ if __name__ == "__main__":
         save_confusion_matrix(
             target_labels, predicted_labels, get_classes(), confusion_matrix_filename
         )
-        print(f"Accuracy score for folder: {n_fold}: {accuracy * 100:.2f}%")
+        
+        # save metrics for the current run
+        #print(f"Accuracy score for folder: {n_fold}: {accuracy * 100:.2f}%")
+        metrics_dic['accuracy'].append(accuracy)
+        metrics_dic['target_labels_all'].extend(target_labels)
+        metrics_dic['predicted_labels_all'].extend(predicted_labels)
 
-        # sentence to print on the accuracy file
-        sentence = (
-            f"Accuracy score for testing folder: {n_fold}: {accuracy * 100:.2f}%.\n"
-        )
-        sentence = sentence + f"Model selected at epoch: {best_epoch}"
-
-        # Specify the file path
-        session_id = config["session_id"]
-        accuracy_file_path = os.path.join(accuracy_folder, f"{session_id}.txt")
-
-        # Check if the file exists
-        if os.path.exists(accuracy_file_path):
-            # If the file exists, open it in append mode ("a")
-            with open(accuracy_file_path, "a") as file:
-                # Append the sentence to the file
-                file.write(sentence + "\n")
-        else:
-            # If the file does not exist, open it in write mode ("w")
-            with open(accuracy_file_path, "w") as file:
-                # Write the sentence to the file
-                file.write(sentence + "\n")
-
-        accuracy_history.append(accuracy)
-        target_labels_all.extend(target_labels)
-        predicted_labels_all.extend(predicted_labels)
-
-    # save total and final confusion matrix
-
+    
+    # save confusion matric and final results 
     confusion_matrix_filename_final = os.path.join(
         log_fold, f"confusion_matrix_final_{run}.png"
     )
     save_confusion_matrix(
-        target_labels_all,
-        predicted_labels_all,
+        metrics_dic['target_labels_all'],
+        metrics_dic['predicted_labels_all'],
         get_classes(),
         confusion_matrix_filename_final,
     )
+    
+    # save final results into csv
+    accuracy_filename = os.path.join(accuracy_folder, f"{config['session_id']}.csv ")
+    save_accuracies_to_csv(metrics_dic['accuracy'], accuracy_filename)
 
-    print(f"Loss_train_final: {np.mean(loss_train_history):.2f}")
-    print(f"Loss_validation_final: {np.mean(loss_val_history):.2f}")
-    print(f"Accuracy: {np.mean(accuracy_history) * 100:.2f}%")
+    print(f"Final Loss train: {np.mean(metrics_dic['loss_train']):.2f}")
+    print(f"Final Loss train: {np.mean(metrics_dic['loss_val']):.2f}")
+    print(f"Totale accuracy: {np.mean(metrics_dic['accuracy']) * 100:.2f}%")

@@ -243,4 +243,29 @@ def data_augmentation_list(data_aug_type):
     else:
         raise Exception("Data augmnetation not considered")
     
+def save_accuracies_to_csv(accuracies, filename):
+    
+    # Round accuracies to 2 decimal places
+    accuracies = [round(acc, 2) for acc in accuracies]
+    
+    # Number of folds
+    num_folds = len(accuracies)
+    
+    # Creating column names for folds
+    fold_columns = [f'fold_{i+1}' for i in range(num_folds)]
+    
+    # Calculating total accuracy rounded to 2 decimal places
+    total_accuracy = round(sum(accuracies) / num_folds, 2)
+    
+    # Creating DataFrame with fold accuracies and total accuracy
+    df = pd.DataFrame([accuracies + [total_accuracy]], columns=fold_columns + ['total'])
+    
+    # Check if the file already exists
+    if os.path.isfile(filename):
+        # Append data to the existing file without writing the header
+        df.to_csv(filename, mode='a', header=False, index=False)
+    else:
+        # File does not exist, create it and write the header
+        df.to_csv(filename, mode='w', header=True, index=False)
+    
     
