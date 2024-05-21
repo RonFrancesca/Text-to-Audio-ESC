@@ -2,7 +2,6 @@
 
 # Synthesizing Soundscapes: Leveraging Text-to-Audio Models for Environmental Sound Classification
 
-
 <!-- <img width="700px" src="docs/new-generic-style-transfer-headline.svg"> -->
  
 [Francesca Ronchini](https://www.linkedin.com/in/francesca-ronchini/)<sup>1</sup>, [Luca Comanducci](https://lucacoma.github.io/)<sup>1</sup>, and [Fabio Antonacci](https://www.deib.polimi.it/ita/personale/dettagli/573870)<sup>1</sup>
