@@ -29,7 +29,7 @@ from utils import (
     collect_val_generated_metadata,
     get_classes,
     make_folder,
-    save_accuracies_to_csv, 
+    save_accuracy_to_csv, 
 )
 
 from training_data_processing import (
@@ -116,7 +116,6 @@ if __name__ == "__main__":
         max_fold = annotations_real["fold"].max() + 1
 
     # dictionary for metrics
-    
     metrics_dic = {
         'accuracy': [],
         'loss_train': [],
@@ -125,6 +124,11 @@ if __name__ == "__main__":
         'predicted_labels_all': [],
         
     }
+    
+    run = config["run"]
+        
+    # loss function of the model
+    loss_fn = nn.CrossEntropyLoss()
 
     for n_fold in range(1, max_fold):
 
@@ -283,7 +287,7 @@ if __name__ == "__main__":
         ###########
         ## train ##
         ###########
-        run = config["run"]
+        
         if config["model"] == "CNN":
             model = CNNNetwork(config)
             checkpoint_file_name = f"urban-sound-cnn_{run}.pth"
@@ -291,34 +295,18 @@ if __name__ == "__main__":
             model = CRNNBaseline(config)
             checkpoint_file_name = f"urban-sound-crnn_{run}.pth"
         else:
-            print("None model selected")
+            print("Model selected is not implemented ")
+            
         model = model.to(device)
+        
+        # optimizer
+        optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], eps=1e-07, weight_decay=1e-3)
 
         # print the summary of the folder, only for the first iteraction in the loop
         if n_fold == 1:
             input_example = (1, config["n_mels"], features.patch_samples)
             summary(model, input_example)
 
-        # loss function of the model
-        loss_fn = nn.CrossEntropyLoss()
-
-        # Specify different weight decay values for different layers
-        # L2 regularization
-        if config["model"] == "Cnn":
-            # params = [
-            #     {'params': model.cnn.parameters(), 'weight_decay': 0},
-            #     {'params': model.flatten.parameters(), 'weight_decay': 0},
-            #     {'params': model.dense_layers.parameters(), 'weight_decay': 0.001},
-            # ]
-
-            # optimizer = torch.optim.Adam(params, lr=config["opt"]["lr"])
-            optimizer = torch.optim.Adam(
-                model.parameters(), lr=0.001, eps=1e-07, weight_decay=1e-3
-            )
-        else:
-            optimizer = torch.optim.Adam(
-                model.parameters(), lr=0.001, eps=1e-07, weight_decay=1e-3
-            )
 
         loss_train, loss_val, best_epoch = train(
             model,
@@ -399,11 +387,14 @@ if __name__ == "__main__":
         accuracy = accuracy_score(target_labels, predicted_labels)
 
         # save confusion matrix per file
-        confusion_matrix_filename = os.path.join(
-            log_fold, f"fold_{n_fold}_{run}_cmx.png"
-        )
+        # confusion_matrix_filename = os.path.join(
+        #     log_fold, f"cfmx_fold_{n_fold}_run_{run}.png"
+        # )
         save_confusion_matrix(
-            target_labels, predicted_labels, get_classes(), confusion_matrix_filename
+            target_labels, 
+            predicted_labels, 
+            get_classes(), 
+            os.path.join(log_fold, f"cfmx_fold_{n_fold}_run_{run}.png")
         )
         
         # save metrics for the current run
@@ -413,20 +404,20 @@ if __name__ == "__main__":
         metrics_dic['predicted_labels_all'].extend(predicted_labels)
 
     
-    # save confusion matric and final results 
-    confusion_matrix_filename_final = os.path.join(
-        log_fold, f"confusion_matrix_final_{run}.png"
-    )
+    # # save confusion matric and final results 
+    # confusion_matrix_filename_final = os.path.join(
+    #     log_fold, f"confusion_matrix_final_{run}.png"
+    # )
     save_confusion_matrix(
         metrics_dic['target_labels_all'],
         metrics_dic['predicted_labels_all'],
         get_classes(),
-        confusion_matrix_filename_final,
+        os.path.join(log_fold, f"cfmx_total_{run}.png")
     )
     
     # save final results into csv
     accuracy_filename = os.path.join(accuracy_folder, f"{config['session_id']}.csv ")
-    save_accuracies_to_csv(metrics_dic['accuracy'], accuracy_filename)
+    save_accuracy_to_csv(metrics_dic['accuracy'], accuracy_filename)
 
     print(f"Final Loss train: {np.mean(metrics_dic['loss_train']):.2f}")
     print(f"Final Loss train: {np.mean(metrics_dic['loss_val']):.2f}")

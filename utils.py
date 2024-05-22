@@ -243,7 +243,7 @@ def data_augmentation_list(data_aug_type):
     else:
         raise Exception("Data augmnetation not considered")
     
-def save_accuracies_to_csv(accuracies, filename):
+def save_accuracy_to_csv(accuracies, filename):
     
     # Round accuracies to 2 decimal places
     accuracies = [round(acc, 2) for acc in accuracies]
