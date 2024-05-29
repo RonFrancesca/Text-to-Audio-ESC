@@ -20,6 +20,10 @@ from urban_sound_dataset import (
     UrbanSoundDatasetValTest,
     UrbanSoundDataset_generated,
 )
+
+from TrainClass import TrainClass
+from NetworkData import NetworkData
+
 from training import train
 from inference import inference
 from data_preprocess import extract_stat_data
@@ -29,17 +33,12 @@ from utils import (
     collect_val_generated_metadata,
     get_classes,
     make_folder,
-    save_accuracy_to_csv, 
+    save_accuracy_to_csv,
 )
 
-from training_data_processing import (
-    Dataset_Settings, 
-    Features
-)
+from training_data_processing import Dataset_Settings, Features
 
-from cross_validation_process import (
-    get_val_folder
-)
+from cross_validation_process import get_val_folder
 
 import ipdb
 import datetime
@@ -92,333 +91,339 @@ if __name__ == "__main__":
     accuracy_folder = os.path.join(current_run, "accuracy")
     img_folder = os.path.join(current_run, "images")
     log_fold = os.path.join(current_run, "log")
-    
+
     for folder in [checkpoint_folder, accuracy_folder, img_folder]:
         make_folder(folder)
-    
+
     # path to metadata and data folders
     metadata_real = config["metadata_real"]
     metadata_gen = config["metadata_gen"]
     audio_dir_real = config["audio_dir_real"]
     audio_dir_fake = metadata_gen
-    
+
     # annotations
     annotations_real = pd.read_csv(metadata_real)
 
-    # features for audios - when do I need them? 
-    
-    features = Features(config)
+    # features for audios
+    features = Features(config["feats"])
+    training_data = TrainClass(config["training"])
+    network_data = NetworkData(config["net"])
 
     # folder for cross validation
-    if features.fast_run:
+    fast_run = config["fast_run"]
+    if fast_run:
         max_fold = annotations_real["fold"].min() + 3
+        training_data.n_epochs = 1
     else:
         max_fold = annotations_real["fold"].max() + 1
 
-    # dictionary for metrics
-    metrics_dic = {
-        'accuracy': [],
-        'loss_train': [],
-        'loss_val': [],
-        'target_labels_all': [],
-        'predicted_labels_all': [],
-        
-    }
-    
-    run = config["run"]
-        
     # loss function of the model
     loss_fn = nn.CrossEntropyLoss()
 
-    for n_fold in range(1, max_fold):
+    for run in range(training_data.runs):
 
-        print(f"Testing folder: {n_fold}")
-        checkpoint_folder_path = os.path.join(checkpoint_folder, f"fold_{n_fold}")
-        make_folder(checkpoint_folder_path)
-        
-        writer = log.get_writer(
-            os.path.join(
-                log_fold,
-                f"fold_{n_fold}_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
-            )
-        )
+        print(f"\n****\nStarting run: {run}\n****\n")
 
-        # validation folder
-        val_fold = get_val_folder(n_fold, max_fold, features.fast_run)
-        
-        dataset_settings = Dataset_Settings(
-            val_fold, 
-            n_fold, 
-            annotations_real,
-            metadata_real, 
-            metadata_gen,
-            features.fast_run, 
-            n_rep=config['n_rep'], 
-        )
-        
-        # take only the original and base dataset
-        if features.data_type == 'original':
-            
-            # real dataset
-            train_data_real, val_data_real = dataset_settings.get_original_data()
-            usd_train = UrbanSoundDataset(
-                config,
-                train_data_real,
-                features,
-                device,
-                origin="real",
+        checkpoint_folder_run = os.path.join(checkpoint_folder, f"run_{run}")
+        make_folder(checkpoint_folder_run)
+
+        # dictionary for metrics
+        metrics_dic = {
+            "accuracy": [],
+            "loss_train": [],
+            "loss_val": [],
+            "target_labels_all": [],
+            "predicted_labels_all": [],
+        }
+
+        for n_fold in range(1, max_fold):
+
+            print(f"Testing folder: {n_fold}")
+            checkpoint_folder_path = os.path.join(
+                checkpoint_folder_run, f"fold_{n_fold}"
             )
-            
-            usd_val = UrbanSoundDataset(
-                config,
-                val_data_real,
-                features,
-                device,
-                origin="real",
+            make_folder(checkpoint_folder_path)
+
+            writer = log.get_writer(
+                os.path.join(
+                    log_fold,
+                    f"fold_{n_fold}_"
+                    + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
+                )
             )
-            
-            # real dataset with augmentation applied
-            if features.data_aug is not None:
-                train_data_aug, val_data_aug = dataset_settings.get_augmented_dataset(features)
-                usd_train_aug = UrbanSoundDataset(
+
+            # validation folder
+            val_fold = get_val_folder(n_fold, max_fold, fast_run)
+
+            dataset_settings = Dataset_Settings(
+                val_fold,
+                n_fold,
+                annotations_real,
+                metadata_real,
+                metadata_gen,
+                fast_run,
+                n_rep=training_data.n_rep,
+            )
+
+            # take only the original and base dataset
+            if training_data.data_type == "original":
+
+                # real dataset
+                train_data_real, val_data_real = dataset_settings.get_original_data()
+                usd_train = UrbanSoundDataset(
                     config,
-                    train_data_aug,
+                    train_data_real,
                     features,
                     device,
-                    origin="aug",
+                    origin="real",
                 )
-                
-                usd_val_aug = UrbanSoundDataset(
-                    config,
-                    val_data_aug,
-                    features,
-                    device,
-                    origin="aug",
-                )
-                
-                usd_train = torch.utils.data.ConcatDataset([usd_train, usd_train_aug])
-                usd_val = torch.utils.data.ConcatDataset([usd_val, usd_val_aug])
-            
-        elif features.data_type == 'generated':
-            
-            train_data_gen, val_data_gen = dataset_settings.get_generated_data()
-            
-            usd_train = UrbanSoundDataset(
-                config,
-                train_data_gen,
-                features,
-                device,
-                origin="fake",
-            )
-            
-            usd_val = UrbanSoundDataset(
-                config,
-                val_data_gen,
-                features,
-                device,
-                origin="fake",
-            )
-        
-        elif features.data_type == 'both':
-            
-            train_data_real, val_data_real = dataset_settings.get_original_data()
-            train_data_gen, val_data_gen = dataset_settings.get_generated_data()
-            
-            # training dataset 
-            usd_train_real = UrbanSoundDataset(
-                config,
-                train_data_real,
-                features,
-                device,
-                origin="real",
-            )
-            
-            usd_train_gen = UrbanSoundDataset(
-                config,
-                train_data_gen,
-                features,
-                device,
-                origin="fake",
-            )
-            
-            usd_train = torch.utils.data.ConcatDataset([usd_train_real, usd_train_gen])
-            
-            # validation dataset
-            usd_val_real = UrbanSoundDataset(
+
+                usd_val = UrbanSoundDataset(
                     config,
                     val_data_real,
                     features,
                     device,
                     origin="real",
                 )
-            
-            usd_val_gen = UrbanSoundDataset(
+
+                # real dataset with augmentation applied
+                if training_data.data_aug is not None:
+                    train_data_aug, val_data_aug = (
+                        dataset_settings.get_augmented_dataset(features)
+                    )
+                    usd_train_aug = UrbanSoundDataset(
+                        config,
+                        train_data_aug,
+                        features,
+                        device,
+                        origin="aug",
+                    )
+
+                    usd_val_aug = UrbanSoundDataset(
+                        config,
+                        val_data_aug,
+                        features,
+                        device,
+                        origin="aug",
+                    )
+
+                    usd_train = torch.utils.data.ConcatDataset(
+                        [usd_train, usd_train_aug]
+                    )
+                    usd_val = torch.utils.data.ConcatDataset([usd_val, usd_val_aug])
+
+            elif training_data.data_type == "generated":
+
+                train_data_gen, val_data_gen = dataset_settings.get_generated_data()
+
+                usd_train = UrbanSoundDataset(
+                    config,
+                    train_data_gen,
+                    features,
+                    device,
+                    origin="fake",
+                )
+
+                usd_val = UrbanSoundDataset(
                     config,
                     val_data_gen,
                     features,
                     device,
                     origin="fake",
                 )
-            
-            usd_val = torch.utils.data.ConcatDataset([usd_val_real, usd_val_gen])
-        
-        else:
-            raise Exception("Sorry, the value you inserted for the concatentaion mode is not valid!")
 
-        # dataloader for dataset
-        train_data_loader = DataLoader(
-            usd_train,
-            shuffle=True,
-            batch_size=config["batch_size"],
-            num_workers=torch.cuda.device_count() * 4,
-            prefetch_factor=4,
-            pin_memory=True,
-        )
+            elif training_data.data_type == "both":
 
-        val_data_loader = DataLoader(
-            usd_val,
-            shuffle=True,
-            batch_size=config["batch_size_val"],
-            num_workers=torch.cuda.device_count() * 4,
-            prefetch_factor=4,
-            pin_memory=True,
-        )
+                train_data_real, val_data_real = dataset_settings.get_original_data()
+                train_data_gen, val_data_gen = dataset_settings.get_generated_data()
 
-        ###########
-        ## train ##
-        ###########
-        
-        if config["model"] == "CNN":
-            model = CNNNetwork(config)
-            checkpoint_file_name = f"urban-sound-cnn_{run}.pth"
-        elif config["model"] == "CRNN":
-            model = CRNNBaseline(config)
-            checkpoint_file_name = f"urban-sound-crnn_{run}.pth"
-        else:
-            print("Model selected is not implemented ")
-            
-        model = model.to(device)
-        
-        # optimizer
-        optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], eps=1e-07, weight_decay=1e-3)
+                # training dataset
+                usd_train_real = UrbanSoundDataset(
+                    config,
+                    train_data_real,
+                    features,
+                    device,
+                    origin="real",
+                )
 
-        # print the summary of the folder, only for the first iteraction in the loop
-        if n_fold == 1:
-            input_example = (1, config["n_mels"], features.patch_samples)
-            summary(model, input_example)
+                usd_train_gen = UrbanSoundDataset(
+                    config,
+                    train_data_gen,
+                    features,
+                    device,
+                    origin="fake",
+                )
 
+                usd_train = torch.utils.data.ConcatDataset(
+                    [usd_train_real, usd_train_gen]
+                )
 
-        loss_train, loss_val, best_epoch = train(
-            model,
-            config,
-            train_data_loader,
-            val_data_loader,
-            loss_fn,
-            optimizer,
-            features.n_epochs,
-            device,
-            checkpoint_folder_path,
-            writer,
-            img_folder,
-            features.patch_samples,
-            features.sr,
-            features.n_window,
-            # testing_mode,
-            checkpoint_filename=checkpoint_file_name,
-        )
+                # validation dataset
+                usd_val_real = UrbanSoundDataset(
+                    config,
+                    val_data_real,
+                    features,
+                    device,
+                    origin="real",
+                )
 
-        metrics_dic['loss_train'].append(loss_train)
-        metrics_dic['loss_val'].append(loss_val)
+                usd_val_gen = UrbanSoundDataset(
+                    config,
+                    val_data_gen,
+                    features,
+                    device,
+                    origin="fake",
+                )
 
-        ###############
-        ## inference ##
-        ###############
+                usd_val = torch.utils.data.ConcatDataset([usd_val_real, usd_val_gen])
 
-        test_data = annotations_real[annotations_real["fold"] == n_fold]
-        test_data.reset_index(drop=True, inplace=True)
+            else:
+                raise Exception(
+                    "Sorry, the value you inserted for the concatentaion mode is not valid!"
+                )
 
-        usd_test = UrbanSoundDataset(
-            config,
-            test_data,
-            features,
-            device,
-        )
+            # dataloader for dataset
+            train_data_loader = DataLoader(
+                usd_train,
+                shuffle=True,
+                batch_size=training_data.batch_size,
+                num_workers=torch.cuda.device_count() * 4,
+                prefetch_factor=4,
+                pin_memory=True,
+            )
 
-        test_data_loader = DataLoader(
-            usd_test,
-            batch_size=config["batch_size_test"],
-            num_workers=torch.cuda.device_count() * 4,
-            prefetch_factor=4,
-            pin_memory=True,
-        )
+            val_data_loader = DataLoader(
+                usd_val,
+                shuffle=True,
+                batch_size=training_data.batch_size_val,
+                num_workers=torch.cuda.device_count() * 4,
+                prefetch_factor=4,
+                pin_memory=True,
+            )
 
-        # load the model
-        if config["model"] == "CNN":
-            inference_model = CNNNetwork(config)
-            checkpoint_file_name = f"urban-sound-cnn_{run}.pth"
-        elif config["model"] == "CRNN":
-            inference_model = CRNNBaseline(config)
-            checkpoint_file_name = f"urban-sound-crnn_{run}.pth"
-        else:
-            print("None model selected")
+            ###########
+            ## train ##
+            ###########
 
-        state_dict = torch.load(
-            os.path.join(checkpoint_folder_path, checkpoint_file_name)
-        )
-        
-        inference_model.load_state_dict(state_dict)
-        inference_model = inference_model.to(device)
-        inference_model.eval()
+            if training_data.model == "CNN":
+                model = CNNNetwork(features.mel_bands, network_data)
+                checkpoint_file_name = f"urban-sound-cnn_{run}.pth"
+            elif training_data.model == "CRNN":
+                model = CRNNBaseline(features.mel_bands, network_data)
+                checkpoint_file_name = f"urban-sound-crnn_{run}.pth"
+            else:
+                print("Model selected is not implemented ")
 
-        # accuracy score for the testing folder
-        target_labels, predicted_labels = inference(
-            inference_model,
-            config,
-            img_folder,
-            test_data_loader,
-            device,
-            features.patch_samples,
-            features.sr,
-            features.n_window,
-            mode='a',
-        )
+            model = model.to(device)
 
-        # calculate accuracy
-        accuracy = accuracy_score(target_labels, predicted_labels)
+            # optimizer
+            optimizer = torch.optim.Adam(
+                model.parameters(), lr=network_data.lr, eps=1e-07, weight_decay=1e-3
+            )
 
-        # save confusion matrix per file
-        # confusion_matrix_filename = os.path.join(
-        #     log_fold, f"cfmx_fold_{n_fold}_run_{run}.png"
-        # )
+            # print the summary of the folder, only for the first iteraction in the loop
+            if n_fold == 1 and run == 0:
+                input_example = (1, features.mel_bands, features.patch_samples)
+                summary(model, input_example)
+
+            loss_train, loss_val, best_epoch = train(
+                model,
+                config,
+                train_data_loader,
+                val_data_loader,
+                loss_fn,
+                optimizer,
+                training_data.n_epochs,
+                device,
+                checkpoint_folder_path,
+                writer,
+                img_folder,
+                features,
+                checkpoint_filename=checkpoint_file_name,
+            )
+            print(f"Training folder {n_fold} done! :)")
+
+            metrics_dic["loss_train"].append(loss_train)
+            metrics_dic["loss_val"].append(loss_val)
+
+            ###############
+            ## inference ##
+            ###############
+
+            test_data = annotations_real[annotations_real["fold"] == n_fold]
+            test_data.reset_index(drop=True, inplace=True)
+
+            usd_test = UrbanSoundDataset(
+                config,
+                test_data,
+                features,
+                device,
+            )
+
+            test_data_loader = DataLoader(
+                usd_test,
+                batch_size=training_data.batch_size_test,
+                num_workers=torch.cuda.device_count() * 4,
+                prefetch_factor=4,
+                pin_memory=True,
+            )
+
+            # load the model
+            if training_data.model == "CNN":
+                inference_model = CNNNetwork(features.mel_bands, network_data)
+                checkpoint_file_name = f"urban-sound-cnn_{run}.pth"
+            elif training_data.model == "CRNN":
+                inference_model = CRNNBaseline(features.mel_bands, network_data)
+                checkpoint_file_name = f"urban-sound-crnn_{run}.pth"
+            else:
+                print("None model selected")
+
+            state_dict = torch.load(
+                os.path.join(checkpoint_folder_path, checkpoint_file_name)
+            )
+
+            inference_model.load_state_dict(state_dict)
+            inference_model = inference_model.to(device)
+            inference_model.eval()
+
+            # accuracy score for the testing folder
+            target_labels, predicted_labels = inference(
+                inference_model,
+                config,
+                img_folder,
+                test_data_loader,
+                device,
+                features,
+                mode="a",
+            )
+
+            # calculate accuracy for current run and save confusion matrix
+            accuracy = accuracy_score(target_labels, predicted_labels)
+            save_confusion_matrix(
+                target_labels,
+                predicted_labels,
+                get_classes(),
+                os.path.join(log_fold, f"cfmx_fold_{n_fold}_run_{run}.png"),
+            )
+
+            # save metrics for the current run
+            metrics_dic["accuracy"].append(accuracy)
+            metrics_dic["target_labels_all"].extend(target_labels)
+            metrics_dic["predicted_labels_all"].extend(predicted_labels)
+
         save_confusion_matrix(
-            target_labels, 
-            predicted_labels, 
-            get_classes(), 
-            os.path.join(log_fold, f"cfmx_fold_{n_fold}_run_{run}.png")
+            metrics_dic["target_labels_all"],
+            metrics_dic["predicted_labels_all"],
+            get_classes(),
+            os.path.join(log_fold, f"cfmx_total_{run}.png"),
         )
-        
-        # save metrics for the current run
-        #print(f"Accuracy score for folder: {n_fold}: {accuracy * 100:.2f}%")
-        metrics_dic['accuracy'].append(accuracy)
-        metrics_dic['target_labels_all'].extend(target_labels)
-        metrics_dic['predicted_labels_all'].extend(predicted_labels)
 
-    
-    # # save confusion matric and final results 
-    # confusion_matrix_filename_final = os.path.join(
-    #     log_fold, f"confusion_matrix_final_{run}.png"
-    # )
-    save_confusion_matrix(
-        metrics_dic['target_labels_all'],
-        metrics_dic['predicted_labels_all'],
-        get_classes(),
-        os.path.join(log_fold, f"cfmx_total_{run}.png")
-    )
-    
-    # save final results into csv
-    accuracy_filename = os.path.join(accuracy_folder, f"{config['session_id']}.csv ")
-    save_accuracy_to_csv(metrics_dic['accuracy'], accuracy_filename)
+        # save final results as csv file
+        accuracy_filename = os.path.join(
+            accuracy_folder, f"{config['session_id']}.csv "
+        )
+        save_accuracy_to_csv(metrics_dic["accuracy"], accuracy_filename)
 
-    print(f"Final Loss train: {np.mean(metrics_dic['loss_train']):.2f}")
-    print(f"Final Loss train: {np.mean(metrics_dic['loss_val']):.2f}")
-    print(f"Totale accuracy: {np.mean(metrics_dic['accuracy']) * 100:.2f}%")
+        # print(f"Final Loss train: {np.mean(metrics_dic['loss_train']):.2f}")
+        # print(f"Final Loss train: {np.mean(metrics_dic['loss_val']):.2f}")
+        print(f"Accuracy: {np.mean(metrics_dic['accuracy']) * 100:.2f}%")

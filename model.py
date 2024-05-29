@@ -5,16 +5,15 @@ class CNNNetwork(torch.nn.Module):
 
     def __init__(
         self,
-        config,
-        dropout_rate=0.5,
-        kernel_size=5,
+        n_mels,
+        net_data,
         pool_size=(4, 2),
         pool_stride=(4, 2),
     ):
         super().__init__()
 
-        self.droupout_rate = dropout_rate
-        self.kernel_size = kernel_size
+        self.droupout_rate = net_data.dropout_rate
+        self.kernel_size = net_data.kernel_size
         self.pool_size = pool_size
         self.pool_stride = pool_stride
 
@@ -49,9 +48,9 @@ class CNNNetwork(torch.nn.Module):
         self.flatten = torch.nn.Flatten()
 
         # to be removed afterwards
-        if config["n_mels"] == 128:
+        if n_mels == 128:
             in_features_layer_1 = 3072  # 1680
-        elif config["n_mels"] == 64:
+        elif n_mels == 64:
             in_features_layer_1 = 1536
 
         self.fc1 = torch.nn.Linear(in_features=in_features_layer_1, out_features=64)

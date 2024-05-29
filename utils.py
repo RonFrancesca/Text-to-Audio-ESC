@@ -28,15 +28,14 @@ def get_classes():
 
 def make_folder(folder_path):
     """
-        The function create all the folders in the folders list given as input. 
+    The function create all the folders in the folders list given as input.
     """
     if not folder_path:
         print(f"Empty folder path")
         return
-    
-    os.makedirs(folder_path, exist_ok=True)    
+
+    os.makedirs(folder_path, exist_ok=True)
     print(f"Created folder: {folder_path}")
-    
 
 
 def plot_figure(data, filename, label):
@@ -232,40 +231,40 @@ def collect_val_generated_metadata(metadata_fold, n_rep, val_fold):
 
     return audio_gen_df
 
+
 def data_augmentation_list(data_aug_type):
-    
-    if data_aug_type == 'PS1_all':
+
+    if data_aug_type == "PS1_all":
         return [-2, -1, 1, 2]
-    elif data_aug_type == 'PS2_all':
+    elif data_aug_type == "PS2_all":
         return [-3.5, -2.5, 2.5, 3.5]
-    elif data_aug_type == 'TS_all':
+    elif data_aug_type == "TS_all":
         return [0.81, 0.93, 1.07, 1.23]
     else:
         raise Exception("Data augmnetation not considered")
-    
+
+
 def save_accuracy_to_csv(accuracies, filename):
-    
+
     # Round accuracies to 2 decimal places
     accuracies = [round(acc, 2) for acc in accuracies]
-    
+
     # Number of folds
     num_folds = len(accuracies)
-    
+
     # Creating column names for folds
-    fold_columns = [f'fold_{i+1}' for i in range(num_folds)]
-    
+    fold_columns = [f"fold_{i+1}" for i in range(num_folds)]
+
     # Calculating total accuracy rounded to 2 decimal places
     total_accuracy = round(sum(accuracies) / num_folds, 2)
-    
+
     # Creating DataFrame with fold accuracies and total accuracy
-    df = pd.DataFrame([accuracies + [total_accuracy]], columns=fold_columns + ['total'])
-    
+    df = pd.DataFrame([accuracies + [total_accuracy]], columns=fold_columns + ["total"])
+
     # Check if the file already exists
     if os.path.isfile(filename):
         # Append data to the existing file without writing the header
-        df.to_csv(filename, mode='a', header=False, index=False)
+        df.to_csv(filename, mode="a", header=False, index=False)
     else:
         # File does not exist, create it and write the header
-        df.to_csv(filename, mode='w', header=True, index=False)
-    
-    
+        df.to_csv(filename, mode="w", header=True, index=False)

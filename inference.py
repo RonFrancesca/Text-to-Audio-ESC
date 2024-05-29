@@ -17,9 +17,7 @@ def inference(
     img_folder,
     test_data_loader,
     device,
-    patch_lenght,
-    sample_rate,
-    window_size,
+    features,
     mode,
 ):
 
@@ -37,7 +35,12 @@ def inference(
             inputs, targets = inputs.to(device), targets.to(device)
 
             inputs = process_audio_GPU(
-                inputs, config, device, patch_lenght, sample_rate, window_size
+                inputs,
+                config,
+                device,
+                features.patch_samples,
+                features.sr,
+                features.n_window,
             )
 
             # plot the image ##

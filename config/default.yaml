@@ -1,50 +1,44 @@
-fast_run: 0
+fast_run: 1
 processing: 'CPU'
-gpu: "0"
+gpu: "3"
 allow_growth: "True"
 
 base_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class"
 log_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/logdir"
 session_id: "test"
-
 metadata_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
 metadata_gen: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOGEN_gpt"
 audio_dir_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
 
-run: 1
-model: CNN # Cnn for Salamon netwok, CRNN for Cobos network
-data_type: 'original' # [original, generated, both]
-n_rep: 1 # number of repetition of the dataset [1, 2, 3, 4]
-data_aug: null # possible values in line with the paper considered from Salamon [null, TS, PS1, PS2, PS1_all, PS2_all TS_all]
-
-normalization: "spec" # [spec or dataset], spec when normalization spec by spec, dataset when normalizing considering the whole dataset
-
-batch_size: 128
-batch_size_val: 64
-n_epochs: 100 # max num epochs
-val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
-
-batch_size_test: 1
-testing_mode: 'clip' # [clip or frame] 
-
-
-lr: 0.001
-
-n_mels: 64
-n_filters: 2048
-hop_length: 512 
-n_window: 1024
-sr: 16000
-f_min: 0
-f_max: 8000
-audio_s: 4
-patch_s: 3
-
-net:
+training:
+  runs: 2
+  model: CNN # Cnn for Salamon netwok, CRNN for Cobos network
+  data_type: 'original' # [original, generated, both]
+  n_rep: 1 # number of repetition of the dataset [1, 2, 3, 4]
+  data_aug: null # possible values in line with the paper considered from Salamon [null, TS, PS1, PS2, PS1_all, PS2_all TS_all]
+  normalization: "spec" # [spec or dataset], spec when normalization spec by spec, dataset when normalizing considering the whole dataset
+  batch_size: 128
+  batch_size_val: 64
+  n_epochs: 100 # max num epochs
+  val_thresholds: [0.5] # thresholds used to compute f1 intersection in validation.
+  batch_size_test: 1
+  testing_mode: 'clip' # [clip or frame] 
+feats:
+  n_mels: 64
+  n_filters: 2048
+  hop_length: 512 
+  n_window: 1024
+  sr: 16000
+  f_min: 0
+  f_max: 8000
+  audio_s: 4
+  patch_s: 3
+net: 
+  lr: 0.001
   kernel_size: 5
   stride: 1
   padding: 2
-  dense_drop: [0.5, 0.5]
+  dropout_rate: 0.5
   maxp_ks: [4, 2]
   maxp_stride: [4, 2]
   nclass: 10

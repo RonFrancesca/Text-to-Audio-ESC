@@ -31,9 +31,7 @@ def train_one_epoch(
     loss_fn,
     optimizer,
     device,
-    patch_lenght,
-    sample_rate,
-    window_size,
+    features,
     img_folder,
 ):
 
@@ -49,7 +47,12 @@ def train_one_epoch(
         inputs, targets = inputs.to(device), targets.to(device)
 
         inputs = process_audio_GPU(
-            inputs, config, device, patch_lenght, sample_rate, window_size
+            inputs,
+            config,
+            device,
+            features.patch_samples,
+            features.sr,
+            features.n_window,
         )
 
         # plot the image ##
@@ -81,9 +84,7 @@ def val_one_epoch(
     data_loader,
     loss_fn,
     device,
-    patch_lenght,
-    sample_rate,
-    window_size,
+    features,
     img_folder,
     mode,
 ):
@@ -104,7 +105,12 @@ def val_one_epoch(
             inputs, targets = inputs.to(device), targets.to(device)
 
             inputs = process_audio_GPU(
-                inputs, config, device, patch_lenght, sample_rate, window_size
+                inputs,
+                config,
+                device,
+                features.patch_samples,
+                features.sr,
+                features.n_window,
             )
             ## plot the image ##
             # label = targets[0].cpu().item()
@@ -133,9 +139,7 @@ def train(
     checkpoint_folder,
     writer,
     img_folder,
-    patch_lenght,
-    sample_rate,
-    window_size,
+    features,
     mode="a",
     early_stop_patience=15,
     checkpoint_filename="urban-sound-cnn.pth",
@@ -155,12 +159,10 @@ def train(
             loss_fn,
             optimizer,
             device,
-            patch_lenght,
-            sample_rate,
-            window_size,
+            features,
             img_folder,
         )
-        print(f"Train_loss: {train_loss:.2f}")
+        # print(f"Train_loss: {train_loss:.2f}")
 
         val_loss = val_one_epoch(
             model,
@@ -168,13 +170,11 @@ def train(
             val_data_loader,
             loss_fn,
             device,
-            patch_lenght,
-            sample_rate,
-            window_size,
+            features,
             img_folder,
             mode,
         )
-        print(f"Val_loss: {val_loss:.2f}")
+        # print(f"Val_loss: {val_loss:.2f}")
 
         # adding training and validation loss to tensorboard writer
         writer.add_scalar("Loss/train", train_loss, n_epoch)
@@ -196,12 +196,11 @@ def train(
 
         else:
             early_stop_counter += 1
-            print(f"Patience status: {early_stop_counter}/{early_stop_patience}")
+            # print(f"Patience status: {early_stop_counter}/{early_stop_patience}")
 
         # Early stopping
         if early_stop_counter > early_stop_patience:
             print(f"Training finished at epoch: {n_epoch}")
             break
 
-    print("Training is done!")
     return train_loss, val_loss_best, best_epoch

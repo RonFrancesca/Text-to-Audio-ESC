@@ -85,17 +85,9 @@ class UrbanSoundDataset(Dataset):
             self.audio_dir = config["audio_dir_real"]
             self.paths_list = list(annotations["slice_file_name"])
 
-
         self.features = features
-        # self.target_sample_rate = features.sr
-        # self.num_samples = features.num_samples
-        # self.mean = features.mean
-        # self.std = features.std
-        # self.mel_bands = features.mel_bands
         self.transformation = get_transformations(self.features)
         self.device = device
-        # self.patch_lenght_samples = features.patch_lenght_samples
-        # self.window_size = features.n_window
 
     def __len__(self):
         return len(self.annotations)

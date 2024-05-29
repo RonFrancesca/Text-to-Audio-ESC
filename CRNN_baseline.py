@@ -37,16 +37,16 @@ class CRNNBaseline(torch.nn.Module):
 
     def __init__(
         self,
-        config,
+        n_mels,
+        kernel_size=3,
         filters=[16, 32, 64, 128, 128, 128, 128],
         pool_sizes=[(2, 2), (2, 2), (1, 2), (1, 2), (1, 2), (1, 2), (1, 2)],
-        kernel_size=3,
     ):
         super(CRNNBaseline, self).__init__()
 
-        if config["n_mels"] == 64:
+        if n_mels == 64:
             do_pool_last = False
-        if config["n_mels"] == 128:
+        if n_mels == 128:
             do_pool_last = True
 
         self.filters = filters
