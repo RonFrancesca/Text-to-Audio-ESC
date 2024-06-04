@@ -86,7 +86,8 @@ if __name__ == "__main__":
     # folders to generate for the current run
     base_dir = config["base_dir"]
     runs_folders = os.path.join(base_dir, "runs")
-    current_run = os.path.join(runs_folders, config["session_id"])
+    session_id = config["session_id"] + '_' + config["training"]["model"]
+    current_run = os.path.join(runs_folders, session_id)
     checkpoint_folder = os.path.join(current_run, "checkpoints")
     accuracy_folder = os.path.join(current_run, "accuracy")
     img_folder = os.path.join(current_run, "images")
@@ -276,12 +277,48 @@ if __name__ == "__main__":
                 )
 
                 usd_val = torch.utils.data.ConcatDataset([usd_val_real, usd_val_gen])
+                
+            elif training_data.data_type == "mixed":
+                # replace replace_n_folder folders with generated AI data
+                dataset_settings.set_folders(training_data.replace_n_folder)
+                train_data_real, val_data_real = dataset_settings.get_original_data()
+                train_data_gen, _ = dataset_settings.get_generated_data()
+
+                # training dataset
+                usd_train_real = UrbanSoundDataset(
+                    config,
+                    train_data_real,
+                    features,
+                    device,
+                    origin="real",
+                )
+
+                usd_train_gen = UrbanSoundDataset(
+                    config,
+                    train_data_gen,
+                    features,
+                    device,
+                    origin="fake",
+                )
+
+                usd_train = torch.utils.data.ConcatDataset(
+                    [usd_train_real, usd_train_gen]
+                )
+
+                # validation dataset
+                usd_val = UrbanSoundDataset(
+                    config,
+                    val_data_real,
+                    features,
+                    device,
+                    origin="real",
+                )
 
             else:
                 raise Exception(
                     "Sorry, the value you inserted for the concatentaion mode is not valid!"
                 )
-
+                
             # dataloader for dataset
             train_data_loader = DataLoader(
                 usd_train,
@@ -309,7 +346,7 @@ if __name__ == "__main__":
                 model = CNNNetwork(features.mel_bands, network_data)
                 checkpoint_file_name = f"urban-sound-cnn_{run}.pth"
             elif training_data.model == "CRNN":
-                model = CRNNBaseline(features.mel_bands, network_data)
+                model = CRNNBaseline(features.mel_bands)
                 checkpoint_file_name = f"urban-sound-crnn_{run}.pth"
             else:
                 print("Model selected is not implemented ")
@@ -373,7 +410,7 @@ if __name__ == "__main__":
                 inference_model = CNNNetwork(features.mel_bands, network_data)
                 checkpoint_file_name = f"urban-sound-cnn_{run}.pth"
             elif training_data.model == "CRNN":
-                inference_model = CRNNBaseline(features.mel_bands, network_data)
+                inference_model = CRNNBaseline(features.mel_bands)
                 checkpoint_file_name = f"urban-sound-crnn_{run}.pth"
             else:
                 print("None model selected")

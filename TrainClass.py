@@ -14,3 +14,9 @@ class TrainClass:
         self.n_epochs = config["n_epochs"]
         self.val_thresholds = config["val_thresholds"]
         self.testing_mode = config["testing_mode"]
+    
+        if 1 <= config["replace_n_folder"] <= 8:
+            self.replace_n_folder = config["replace_n_folder"]
+        else:
+            print("The number of folders to replace is not valid")
+            exit()

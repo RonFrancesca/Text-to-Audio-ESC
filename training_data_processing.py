@@ -6,6 +6,8 @@ from utils import (
     data_augmentation_list,
 )
 
+import random
+
 
 class Features:
 
@@ -40,6 +42,7 @@ class Dataset_Settings:
         annotations_aug=None,
         n_rep=1,
         dataset="UrbanSound8K",
+        total_folders = 10
     ):
 
         self.val_fold = val_fold
@@ -51,13 +54,21 @@ class Dataset_Settings:
         self.n_rep = n_rep
         self.fast_run = fast_run
         self.dataset = dataset
+        self.original_folders = None
+        self.fakes_folders = None
+        self.total_folder = total_folders
 
-    def _get_dataset(self, annotations):
+    def _get_dataset(self):
+        
+        if self.fakes_folders:
+            folder_not_condidered = [self.n_fold, self.val_fold] + self.fakes_folders
+        else:
+            folder_not_condidered = [self.n_fold, self.val_fold] 
 
-        train_data = annotations[
-            ~annotations["fold"].isin([self.n_fold, self.val_fold])
+        train_data = self.annotations_real[
+            ~self.annotations_real["fold"].isin(folder_not_condidered)
         ]
-        val_data = annotations[annotations["fold"] == self.val_fold]
+        val_data = self.annotations_real[self.annotations_real["fold"] == self.val_fold]
 
         if self.fast_run:
             train_data = train_data[:100]
@@ -66,17 +77,24 @@ class Dataset_Settings:
         val_data.reset_index(drop=True, inplace=True)
 
         return train_data, val_data
+    
 
     def get_original_data(self):
-        return self._get_dataset(self.annotations_real)
-
+        return self._get_dataset()
+        
+    
     def apply_augmentation(self):
         return self._get_dataset(self.annotations_aug)
 
     def get_generated_data(self):
-
+        
+        if self.original_folders:
+            folders_not_considered = [self.n_fold, self.val_fold] + self.original_folders
+        else:
+            folders_not_considered = [self.n_fold, self.val_fold]
+        
         train_data_gen = collect_generated_metadata(
-            self.annotations_gen, self.n_rep, self.n_fold, self.val_fold
+            self.annotations_gen, self.n_rep, folders_not_considered
         )
 
         val_data_gen = collect_val_generated_metadata(
@@ -90,8 +108,6 @@ class Dataset_Settings:
 
     def get_augmented_dataset(self, features):
 
-        # TODO: The following if needs to be changed!
-        # Error coming from self.annotation_real. We need the name and not the dataset
 
         # only one augmentation
         if len(features.data_aug.split("_")) == 1:
@@ -107,19 +123,6 @@ class Dataset_Settings:
         # multiple augmentation
         else:
 
-            # dataframe_columns=[
-            #             "slice_file_name",
-            #             "fsID",
-            #             "start",
-            #             "end",
-            #             "salience",
-            #             "fold",
-            #             "classID",
-            #             "class",
-            #         ]
-
-            # train_data_aug = pd.DataFrame(dataframe_columns)
-            # val_data_aug = pd.DataFrame(dataframe_columns)
             train_data_aug = []
             val_data_aug = []
 
@@ -144,3 +147,14 @@ class Dataset_Settings:
                     )
 
         return train_data_aug, val_data_aug
+
+    def set_folders(self, replace_n_fold):
+        
+        numbers = [num for num in range(1, self.total_folder + 1) if num not in [self.val_fold, self.n_fold]]
+        random.shuffle(numbers)
+                
+        # get the first replace_n_fold folds of the list
+        self.fakes_folders = numbers[:replace_n_fold]
+        self.original_folders = numbers[replace_n_fold:]
+        
+        return

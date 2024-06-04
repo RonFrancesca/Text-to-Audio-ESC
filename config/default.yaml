@@ -1,19 +1,20 @@
-fast_run: 1
+fast_run: 0
 processing: 'CPU'
-gpu: "3"
+gpu: "0"
 allow_growth: "True"
+session_id: "mixed_1_folds"
 
 base_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class"
 log_dir: "/nas/home/fronchini/EUSIPCO/urban-sound-class/logdir"
-session_id: "test"
 metadata_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/metadata/UrbanSound8K.csv"
 metadata_gen: "/nas/home/fronchini/EUSIPCO/urban-sound-class/audio_generation/AUDIOGEN_gpt"
 audio_dir_real: "/nas/home/fronchini/EUSIPCO/urban-sound-class/UrbanSound8K/audio"
 
 training:
-  runs: 2
+  runs: 5
+  replace_n_folder: 1
   model: CNN # Cnn for Salamon netwok, CRNN for Cobos network
-  data_type: 'original' # [original, generated, both]
+  data_type: 'mixed' # [original, generated, both, mixed]
   n_rep: 1 # number of repetition of the dataset [1, 2, 3, 4]
   data_aug: null # possible values in line with the paper considered from Salamon [null, TS, PS1, PS2, PS1_all, PS2_all TS_all]
   normalization: "spec" # [spec or dataset], spec when normalization spec by spec, dataset when normalizing considering the whole dataset

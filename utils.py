@@ -152,15 +152,12 @@ def get_transformations(features):
         f_min=features.f_min,
         f_max=features.f_max,
         n_mels=features.mel_bands,
-        # window_fn=torch.hamming_window,
-        # wkwargs={"periodic": False},
-        # power=1
     )
 
     return transformation
 
 
-def collect_generated_metadata(metadata_fold, n_rep, test_fold, val_fold):
+def collect_generated_metadata(metadata_fold, n_rep, folders_not_considered):
 
     audio_gen_df = pd.DataFrame(columns=["slice_file_name", "class", "classid"])
 
@@ -168,7 +165,7 @@ def collect_generated_metadata(metadata_fold, n_rep, test_fold, val_fold):
         folder
         for folder in os.listdir(metadata_fold)
         if folder.startswith("fold_")
-        and int(folder.split("_")[1]) not in [test_fold, val_fold]
+        and int(folder.split("_")[1]) not in folders_not_considered
     ]
     if n_rep == 1:
         csv_ext = ".csv"
