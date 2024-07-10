@@ -54,7 +54,7 @@ class CNNNetwork(torch.nn.Module):
             in_features_layer_1 = 1536
 
         self.fc1 = torch.nn.Linear(in_features=in_features_layer_1, out_features=64)
-        self.fc2 = torch.nn.Linear(in_features=64, out_features=9)
+        self.fc2 = torch.nn.Linear(in_features=64, out_features=10)
 
         self.dr1 = torch.nn.Dropout(p=self.droupout_rate)
         self.dr2 = torch.nn.Dropout(p=self.droupout_rate)
