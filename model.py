@@ -49,12 +49,12 @@ class CNNNetwork(torch.nn.Module):
 
         # to be removed afterwards
         if n_mels == 128:
-            in_features_layer_1 = 3072  # 1680
+            in_features_layer_1 = 3072  
         elif n_mels == 64:
             in_features_layer_1 = 1536
 
         self.fc1 = torch.nn.Linear(in_features=in_features_layer_1, out_features=64)
-        self.fc2 = torch.nn.Linear(in_features=64, out_features=10)
+        self.fc2 = torch.nn.Linear(in_features=64, out_features=9)
 
         self.dr1 = torch.nn.Dropout(p=self.droupout_rate)
         self.dr2 = torch.nn.Dropout(p=self.droupout_rate)
@@ -87,7 +87,7 @@ class CNNNetwork(torch.nn.Module):
         x = self.activation4(x)
 
         # dense output layer
-        x = self.dr2(x)  # N.B. salamon applies dropout before last layer
+        x = self.dr2(x)  
         logits = self.fc2(x)
 
         return logits

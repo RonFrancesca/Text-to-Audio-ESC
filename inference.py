@@ -74,8 +74,6 @@ def inference(
                 predicted = int(get_class_mapping()[predicted_index])
                 labels = int(get_class_mapping()[targets])
 
-                # Append true and predicted labels to lists
-
             target_labels.append(labels)
             predicted_labels.append(predicted)
 

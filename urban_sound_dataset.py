@@ -128,8 +128,6 @@ class UrbanSoundDataset(Dataset):
                 np.save(spec_file_path, signal.numpy())
             else:
                 signal = np.load(spec_file_path)
-                # adding this because I have forgot to pad the data that I needed to pad before
-                # was throwing an errore for the T1_all augmentation technique
                 nsample = int((self.features.sr * 4) / self.features.n_window) + 1
                 if signal.shape[2] > nsample:
                     signal = signal[:, :, :nsample]
@@ -188,8 +186,6 @@ class UrbanSoundDataset_generated(Dataset):
 
         return signal, self.annotations.iloc[index, 2]
 
-
-# TODO: could be done to take from the UrbanSoundDataset directy
 class UrbanSoundDatasetValTest(Dataset):
 
     def __init__(

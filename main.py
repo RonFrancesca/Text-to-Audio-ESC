@@ -86,7 +86,8 @@ if __name__ == "__main__":
     # folders to generate for the current run
     base_dir = config["base_dir"]
     runs_folders = os.path.join(base_dir, "runs")
-    session_id = config["session_id"] + '_' + config["training"]["model"]
+    dataset_gen = config["metadata_gen"].split('/')[-1]
+    session_id = config["session_id"] + '_' + config["training"]["model"] + '_' + dataset_gen
     current_run = os.path.join(runs_folders, session_id)
     checkpoint_folder = os.path.join(current_run, "checkpoints")
     accuracy_folder = os.path.join(current_run, "accuracy")
@@ -120,6 +121,8 @@ if __name__ == "__main__":
 
     # loss function of the model
     loss_fn = nn.CrossEntropyLoss()
+    
+    classes_to_remove = ['street_music']
 
     for run in range(training_data.runs):
 
@@ -216,6 +219,10 @@ if __name__ == "__main__":
             elif training_data.data_type == "generated":
 
                 train_data_gen, val_data_gen = dataset_settings.get_generated_data()
+                
+                # TODO: attention, this lines need to be removed for proper experiments
+                train_data_gen = train_data_gen[~train_data_gen['class'].isin(classes_to_remove)]
+                val_data_gen = val_data_gen[~val_data_gen['class'].isin(classes_to_remove)]
 
                 usd_train = UrbanSoundDataset(
                     config,
@@ -237,7 +244,7 @@ if __name__ == "__main__":
 
                 train_data_real, val_data_real = dataset_settings.get_original_data()
                 train_data_gen, val_data_gen = dataset_settings.get_generated_data()
-
+                
                 # training dataset
                 usd_train_real = UrbanSoundDataset(
                     config,
@@ -388,6 +395,7 @@ if __name__ == "__main__":
             ###############
 
             test_data = annotations_real[annotations_real["fold"] == n_fold]
+            
             test_data.reset_index(drop=True, inplace=True)
 
             usd_test = UrbanSoundDataset(
@@ -461,6 +469,4 @@ if __name__ == "__main__":
         )
         save_accuracy_to_csv(metrics_dic["accuracy"], accuracy_filename)
 
-        # print(f"Final Loss train: {np.mean(metrics_dic['loss_train']):.2f}")
-        # print(f"Final Loss train: {np.mean(metrics_dic['loss_val']):.2f}")
         print(f"Accuracy: {np.mean(metrics_dic['accuracy']) * 100:.2f}%")

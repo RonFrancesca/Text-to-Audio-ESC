@@ -73,10 +73,6 @@ def save_confusion_matrix(y_true, y_pred, classes, filename):
 def plot_audio(data, filename):
     # Plot Mel Spectrogram
 
-    # plt.figure(figsize=(12, 8))
-    # take the first audio of each frame
-    # plt.imshow(data, cmap='viridis', aspect='auto', origin='lower')
-    # plt.colorbar(format='%+2.0f dB')
     plt.plot(data)
     plt.title("Audio")
     plt.xlabel("Time")
@@ -244,7 +240,7 @@ def data_augmentation_list(data_aug_type):
 def save_accuracy_to_csv(accuracies, filename):
 
     # Round accuracies to 2 decimal places
-    accuracies = [round(acc, 2) for acc in accuracies]
+    accuracies = accuracies = [round(acc * 100, 3) for acc in accuracies]
 
     # Number of folds
     num_folds = len(accuracies)
@@ -253,7 +249,7 @@ def save_accuracy_to_csv(accuracies, filename):
     fold_columns = [f"fold_{i+1}" for i in range(num_folds)]
 
     # Calculating total accuracy rounded to 2 decimal places
-    total_accuracy = round(sum(accuracies) / num_folds, 2)
+    total_accuracy = round(sum(accuracies) / num_folds, 3)
 
     # Creating DataFrame with fold accuracies and total accuracy
     df = pd.DataFrame([accuracies + [total_accuracy]], columns=fold_columns + ["total"])

@@ -26,7 +26,7 @@ class ConvBlockCRNN(torch.nn.Module):
         x = self.bn(x)
         x = torch.concatenate(
             (x, x), dim=-1
-        )  # N.B. double check, but original baseline uses same tensor as mask in GLU https://github.com/DCASE-REPO/DESED_task/blob/f7dc296e39b09ef26bd05f27b1c720cbc6208bb1/desed_task/nnet/CNN.py#L5
+        )  
         x = self.GLU(x)
         if self.do_pool:
             x = self.pool(x)
