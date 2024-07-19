@@ -17,6 +17,8 @@ class TrainClass:
     
         if 1 <= config["replace_n_folder"] <= 8:
             self.replace_n_folder = config["replace_n_folder"]
+        elif config["replace_n_folder"] == 0 and config["data_type"]:
+            print("Using only original data")
         else:
             print("The number of folders to replace is not valid")
             exit()

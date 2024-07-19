@@ -95,7 +95,6 @@ class UrbanSoundDataset(Dataset):
     def __getitem__(self, index):
 
         # audio
-
         if self.processing == "GPU":
             signal = process_audio(
                 self.paths_list[index], self.features.sr, self.features.num_samples
@@ -103,10 +102,7 @@ class UrbanSoundDataset(Dataset):
         else:
 
             if self.origin == "real" or self.origin == "fake":
-                if self.features.mel_bands == 64:
-                    spec_file_path = self.paths_list[index].replace(".wav", ".npy")
-                else:
-                    spec_file_path = self.paths_list[index].replace(".wav", "_128.npy")
+                spec_file_path = self.paths_list[index].replace(".wav", f"_{self.features.mel_bands}.npy")
             else:
                 spec_file_path = self.paths_list[index]
 
@@ -128,11 +124,12 @@ class UrbanSoundDataset(Dataset):
                 np.save(spec_file_path, signal.numpy())
             else:
                 signal = np.load(spec_file_path)
-                nsample = int((self.features.sr * 4) / self.features.n_window) + 1
-                if signal.shape[2] > nsample:
-                    signal = signal[:, :, :nsample]
-
+                # todo: need to check this
                 signal = torch.from_numpy(signal)
+                
+        nsample = int((self.features.sr * 4) / self.features.n_window) + 1
+        if signal.shape[2] > nsample:
+            signal = signal[:, :, :nsample]
 
         # label
         if self.origin == "real" or self.origin == "aug":
