@@ -5,6 +5,9 @@ import yaml
 import numpy as np
 import pandas as pd
 
+import ipdb
+import datetime
+
 import torch
 import torchvision
 from torch import nn
@@ -39,10 +42,6 @@ from utils import (
 from training_data_processing import Dataset_Settings, Features
 
 from cross_validation_process import get_val_folder
-
-import ipdb
-import datetime
-
 
 def init(argv=None):
 
@@ -87,7 +86,13 @@ if __name__ == "__main__":
     base_dir = config["base_dir"]
     runs_folders = os.path.join(base_dir, "runs")
     dataset_gen = config["metadata_gen"].split('/')[-1]
-    session_id = config["session_id"] + '_' + config["training"]["model"] + '_' + dataset_gen
+    session_id = config["session_id"] + '_' + config["training"]["model"] 
+    
+    if config["training"]["data_type"] == "original":
+        session_id = session_id + '_US8K'
+    else:
+        session_id = session_id + '_' + dataset_gen
+    
     current_run = os.path.join(runs_folders, session_id)
     checkpoint_folder = os.path.join(current_run, "checkpoints")
     accuracy_folder = os.path.join(current_run, "accuracy")
@@ -122,7 +127,6 @@ if __name__ == "__main__":
     # loss function of the model
     loss_fn = nn.CrossEntropyLoss()
     
-    classes_to_remove = ['street_music']
 
     for run in range(training_data.runs):
 
@@ -219,10 +223,6 @@ if __name__ == "__main__":
             elif training_data.data_type == "generated":
 
                 train_data_gen, val_data_gen = dataset_settings.get_generated_data()
-                
-                # TODO: attention, this lines need to be removed for proper experiments
-                train_data_gen = train_data_gen[~train_data_gen['class'].isin(classes_to_remove)]
-                val_data_gen = val_data_gen[~val_data_gen['class'].isin(classes_to_remove)]
 
                 usd_train = UrbanSoundDataset(
                     config,
