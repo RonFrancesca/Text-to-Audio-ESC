@@ -88,6 +88,7 @@ class UrbanSoundDataset(Dataset):
         self.features = features
         self.transformation = get_transformations(self.features)
         self.device = device
+        self.nsample = int((self.features.sr * 4) / self.features.n_window) + 1
 
     def __len__(self):
         return len(self.annotations)
@@ -127,9 +128,9 @@ class UrbanSoundDataset(Dataset):
                 # todo: need to check this
                 signal = torch.from_numpy(signal)
                 
-        nsample = int((self.features.sr * 4) / self.features.n_window) + 1
-        if signal.shape[2] > nsample:
-            signal = signal[:, :, :nsample]
+        
+        if signal.shape[2] > self.nsample:
+            signal = signal[:, :, :self.nsample]
 
         # label
         if self.origin == "real" or self.origin == "aug":
