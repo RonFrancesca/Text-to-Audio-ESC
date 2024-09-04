@@ -1,6 +1,6 @@
 <div align="center">
 
-# Synthesizing Soundscapes: Leveraging Text-to-Audio Models for Environmental Sound Classification
+# Synthetic Training Set Generation using Text-To-Audio Models for Environmental Sound Classification
 
 <!-- <img width="700px" src="docs/new-generic-style-transfer-headline.svg"> -->
  
@@ -91,8 +91,9 @@ For more details:
 If you use code or comments from this work, please cite our paper:
 
 ```BibTex
-@article{ronchini2024synthesizing,
-  title={Synthesizing Soundscapes: Leveraging Text-to-Audio Models for Environmental Sound Classification},
+
+@article{ronchini2024synthetictrainingsetgeneration,
+  title={Synthetic training set generation using text-to-audio models for environmental sound classification},
   author={Ronchini, Francesca and Comanducci, Luca and Antonacci, Fabio},
   journal={arXiv preprint arXiv:2403.17864},
   year={2024}
