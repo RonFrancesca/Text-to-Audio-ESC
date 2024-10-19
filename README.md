@@ -7,6 +7,7 @@
 [Francesca Ronchini](https://www.linkedin.com/in/francesca-ronchini/)<sup>1</sup>, [Luca Comanducci](https://lucacoma.github.io/)<sup>1</sup>, and [Fabio Antonacci](https://www.deib.polimi.it/ita/personale/dettagli/573870)<sup>1</sup>
 
 <sup>1</sup> Dipartimento di Elettronica, Informazione e Bioingegneria - Politecnico di Milano<br>
+Paper accepted at DCASE Workshop 2024 
     
 [![arXiv](https://img.shields.io/badge/arXiv-2403.17864-b31b1b.svg)](https://arxiv.org/abs/2403.17864)
 
@@ -85,18 +86,21 @@ Additional material and audio samples are available on the [companion website](h
 ## Additional information
 
 For more details:
-"[Synthesizing Soundscapes: Leveraging Text-to-Audio Models for Environmental Sound Classification](https://arxiv.org/abs/2403.17864)", [Francesca Ronchini](https://www.linkedin.com/in/francesca-ronchini/), [Luca Comanducci](https://lucacoma.github.io/), and [Fabio Antonacci](https://www.deib.polimi.it/ita/personale/dettagli/573870) - arXiv, 2024. 
+[Francesca Ronchini](https://www.linkedin.com/in/francesca-ronchini/), [Luca Comanducci](https://lucacoma.github.io/), and [Fabio Antonacci](https://www.deib.polimi.it/ita/personale/dettagli/573870), "[Synthetic training set generation using text-to-audio models for environmental sound classification](https://arxiv.org/abs/2403.17864)", <i>Proceedings of the Detection and Classification of Acoustic Scenes and Events 2024 Workshop (DCASE2024), October 2024</i>
 
 
 If you use code or comments from this work, please cite our paper:
 
 ```BibTex
 
-@article{ronchini2024synthetictrainingsetgeneration,
-  title={Synthetic training set generation using text-to-audio models for environmental sound classification},
-  author={Ronchini, Francesca and Comanducci, Luca and Antonacci, Fabio},
-  journal={arXiv preprint arXiv:2403.17864},
-  year={2024}
+@inproceedings{Ronchini2024,
+    author = "Ronchini, Francesca and Comanducci, Luca and Antonacci, Fabio",
+    title = "Synthetic Training Set Generation using Text-To-Audio Models for Environmental Sound Classification",
+    booktitle = "Proceedings of the Detection and Classification of Acoustic Scenes and Events 2024 Workshop (DCASE2024)",
+    address = "Tokyo, Japan",
+    month = "October",
+    year = "2024",
+    pages = "126--130",
 }
 ```
 
